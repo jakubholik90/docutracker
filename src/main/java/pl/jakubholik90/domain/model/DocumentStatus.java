@@ -2,7 +2,7 @@ package pl.jakubholik90.domain.model;
 
 public enum DocumentStatus {
     AT_USER,
-    DRAFTING,
+    AT_SUBCONTRACTOR,
     CHECKING_BY_CHECKER,
     CHECKING_BY_CLIENT,
     ISSUED,
