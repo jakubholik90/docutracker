@@ -1,6 +1,7 @@
 package pl.jakubholik90.domain.model;
 
 public enum DocumentStatus {
+    NONE,
     AT_USER,
     AT_SUBCONTRACTOR,
     CHECKING_BY_CHECKER,
