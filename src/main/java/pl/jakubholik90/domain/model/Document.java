@@ -1,6 +1,7 @@
 package pl.jakubholik90.domain.model;
 
 import pl.jakubholik90.infrastructure.exception.DocumentException;
+import pl.jakubholik90.infrastructure.exception.ProjectException;
 
 import java.time.LocalDateTime;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -16,9 +17,14 @@ public class Document {
     private LocalDateTime lastStatusChange;
 
     public Document(String fileName, Integer projectId) {
-        if (projectId == null || fileName == null) {
-            throw new DocumentException("projectId and fileName cannot be null");
+        if (fileName == null) {
+            throw new DocumentException("fileName cannot be null");
         }
+
+        if (projectId == null) {
+            throw new ProjectException("projectId cannot be null");
+        }
+
         this.documentId = idCounter.getAndIncrement();
         this.fileName = fileName;
         this.projectId = projectId;
@@ -26,7 +32,7 @@ public class Document {
         this.lastStatusChange= LocalDateTime.now();
     }
 
-    // getters
+    // getters only, no setters
     public String getFileName() {
         return fileName;
     }
@@ -46,17 +52,5 @@ public class Document {
     public LocalDateTime getLastStatusChange() {
         return lastStatusChange;
     }
-
-    // setters
-    public void setStatus(DocumentStatus status) {
-        this.status = status;
-    }
-
-    public void setCurrentRecipient(RecipientType currentRecipient) {
-        this.currentRecipient = currentRecipient;
-    }
-
-
-
 
 }
