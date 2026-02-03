@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb  # in-memory database
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  h2:
+    console:
+      enabled: true  # GUI do przeglądania bazy
+      path: /h2-console
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop  # Tworzy tabele automatycznie
+    show-sql: true  # Pokazuje SQL w konsoli
+    properties:
+      hibernate:
+        format_sql: true
