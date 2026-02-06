@@ -1,19 +1,15 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:testdb  # in-memory database
-    driver-class-name: org.h2.Driver
-    username: sa
+    url: jdbc:postgresql://localhost:5432/docutracker
+    username: jakubholik
     password:
-
-  h2:
-    console:
-      enabled: true  # GUI do przeglądania bazy
-      path: /h2-console
+    # driver-class-name: org.postgresql.Driver\
 
   jpa:
     hibernate:
-      ddl-auto: create-drop  # Tworzy tabele automatycznie
-    show-sql: true  # Pokazuje SQL w konsoli
+      ddl-auto: create-drop
+    show-sql: true
     properties:
       hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
