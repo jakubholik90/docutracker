@@ -11,18 +11,24 @@ public class DocumentEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "document_id")
     private Integer documentId;
+
     @Column(name = "file_name", nullable = false)
     private String fileName;
+
     @Column(name = "project_id", nullable = false)
     private Integer projectId;
+
     @Enumerated(EnumType.STRING)
-    @Column(name = "document_status", nullable = false)
+    @Column(name = "document_status", nullable = false, length = 50)
     private DocumentStatus status;
+
     @Enumerated(EnumType.STRING)
-    @Column(name = "current_recipient", nullable = false)
+    @Column(name = "current_recipient", nullable = false, length = 50)
     private RecipientType currentRecipient;
+
     @Column(name = "last_status_change", nullable = false)
     private LocalDateTime lastStatusChange;
+
     // constructors
     public DocumentEntity() {
     }
@@ -34,6 +40,7 @@ public class DocumentEntity {
         this.currentRecipient = currentRecipient;
         this.lastStatusChange = lastStatusChange;
     }
+
     // getters
     public Integer getDocumentId() {
         return documentId;
@@ -53,6 +60,7 @@ public class DocumentEntity {
     public LocalDateTime getLastStatusChange() {
         return lastStatusChange;
     }
+
     // setters
     public void setDocumentId(Integer documentId) {
         this.documentId = documentId;
