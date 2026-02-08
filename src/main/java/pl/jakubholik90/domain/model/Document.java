@@ -53,4 +53,7 @@ public class Document {
         return lastStatusChange;
     }
 
+    public RecipientType getCurrentRecipient() {
+        return currentRecipient;
+    }
 }
