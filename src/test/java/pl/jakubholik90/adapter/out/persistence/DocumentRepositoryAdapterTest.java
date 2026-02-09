@@ -49,7 +49,6 @@ public class DocumentRepositoryAdapterTest {
     @BeforeEach
     public void setUp() {
         documentJpaRepository.deleteAll();
-        documentRepositoryAdapter = new DocumentRepositoryAdapter();
         mockedDocument1 = Mockito.mock(Document.class);
         mockedDocument2 = Mockito.mock(Document.class);
         documentRepositoryAdapter.save(mockedDocument1);

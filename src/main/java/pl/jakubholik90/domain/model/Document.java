@@ -8,8 +8,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class Document {
 
-    private static final AtomicInteger idCounter = new AtomicInteger(0);
-    private final int documentId;
+    // private static final AtomicInteger idCounter = new AtomicInteger(0);
+    private int documentId;
     private String fileName;
     private Integer projectId;
     private DocumentStatus status;
@@ -24,8 +24,6 @@ public class Document {
         if (projectId == null) {
             throw new ProjectException("projectId cannot be null");
         }
-
-        this.documentId = idCounter.getAndIncrement();
         this.fileName = fileName;
         this.projectId = projectId;
         this.status=DocumentStatus.NONE;
