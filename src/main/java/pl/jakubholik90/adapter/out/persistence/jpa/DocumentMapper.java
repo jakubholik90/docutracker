@@ -30,7 +30,7 @@ public class DocumentMapper {
     };
 
     public Document mapToDocument(DocumentEntity documentEntity) {
-        Document returnDocument = new Document(documentEntity.getFileName(), documentEntity.getProjectId())
+        Document returnDocument = new Document(documentEntity.getFileName(), documentEntity.getProjectId());
         return returnDocument;
     }
 }

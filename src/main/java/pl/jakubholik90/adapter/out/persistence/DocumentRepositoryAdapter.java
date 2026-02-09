@@ -12,7 +12,7 @@ public class DocumentRepositoryAdapter implements DocumentRepository {
     }
 
     @Override
-    public Optional<Document> findByDocumentId(int ocumentId) {
+    public Optional<Document> findByDocumentId(int documentId) {
         return Optional.empty();
     }
 
