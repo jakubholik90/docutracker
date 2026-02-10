@@ -12,25 +12,36 @@ import java.time.LocalDateTime;
 public class DocumentMapper {
 
     public DocumentEntity mapToEntity(Document document) {
-        int documentId = document.getDocumentId();
         String fileName = document.getFileName();
         Integer projectId = document.getProjectId();
         DocumentStatus status = document.getStatus();
         RecipientType currentRecipient = document.getCurrentRecipient();
         LocalDateTime lastStatusChange = document.getLastStatusChange();
 
-        DocumentEntity returnEntity = new DocumentEntity(
-                documentId,
-                fileName,
-                projectId,
-                status,
-                currentRecipient,
-                lastStatusChange);
+        DocumentEntity returnEntity = new DocumentEntity();
+
+        if(document.getDocumentId()!=null) {
+            returnEntity.setDocumentId(returnEntity.getDocumentId());
+        } //  jpa will handle automatically if documentId==null
+        returnEntity.setFileName(fileName);
+        returnEntity.setProjectId(projectId);
+        returnEntity.setStatus(status);
+        returnEntity.setCurrentRecipient(currentRecipient);
+        returnEntity.setLastStatusChange(lastStatusChange);
+
         return returnEntity;
     };
 
     public Document mapToDocument(DocumentEntity documentEntity) {
-        Document returnDocument = new Document(documentEntity.getFileName(), documentEntity.getProjectId());
+        Document returnDocument = Document.builder()
+                .documentId(documentEntity.getDocumentId())
+                .fileName(documentEntity.getFileName())
+                .projectId(documentEntity.getProjectId())
+                .status(documentEntity.getStatus())
+                .currentRecipient(documentEntity.getCurrentRecipient())
+                .lastStatusChange(documentEntity.getLastStatusChange())
+                .build();
+
         return returnDocument;
     }
 }
