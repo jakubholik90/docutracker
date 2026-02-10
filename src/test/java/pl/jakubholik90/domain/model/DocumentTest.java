@@ -12,7 +12,10 @@ public class DocumentTest {
     @Test
     public void testCreateNewDocument() {
 
-        Document document = new Document("XXX.pdf", 1234);
+        Document document = Document.builder()
+                .fileName("XXX.pdf")
+                .documentId(1234)
+                        .build();
 
         //checking values for new created values
         assertEquals("XXX.pdf",document.getFileName()); //checking assign fileName
@@ -26,8 +29,14 @@ public class DocumentTest {
 
     @Test
     public void checkingIdCounter() {
-        Document document0 = new Document("test0.pdf", 1);
-        Document document1 = new Document("test1.pdf", 1);
+        Document document0 = Document.builder()
+                .fileName("test0.pdf")
+                .documentId(1)
+                .build();
+        Document document1 = Document.builder()
+                .fileName("test1.pdf")
+                .documentId(2)
+                .build();
         assertTrue(document1.getDocumentId()>document0.getDocumentId());
         System.out.println(document0.getDocumentId());
         System.out.println(document1.getDocumentId());

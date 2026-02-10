@@ -16,7 +16,7 @@ public class Document {
     private RecipientType currentRecipient;
     private LocalDateTime lastStatusChange;
 
-    public Document(String fileName, Integer projectId) {
+   // public Document(String fileName, Integer projectId) {
 //        if (fileName == null) {
 //            throw new DocumentException("fileName cannot be null");
 //        }
@@ -28,7 +28,7 @@ public class Document {
 //        this.projectId = projectId;
 //        this.status=DocumentStatus.NONE;
 //        this.lastStatusChange= LocalDateTime.now();
-    }
+  //  }
 
     // getters only, no setters
     public String getFileName() {
