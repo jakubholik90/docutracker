@@ -97,11 +97,11 @@ public class DocumentRepositoryAdapterTest {
 
     @Test
     public void shouldFindByProjectId() {
-        when(document1.getProjectId()).thenReturn(1);
-        when(document2.getProjectId()).thenReturn(2);
-        List<Document> listByProjectId = documentRepositoryAdapter.findByProjectId(1);
+        Integer projectId = savedDocument1.getProjectId();
+        List<Document> listByProjectId = documentRepositoryAdapter.findByProjectId(projectId);
+        System.out.println("projectId:" + projectId);
         System.out.println("listByProjectId:" + listByProjectId);
-        boolean listContainsProjectId1 = listByProjectId.contains(document1);
+        boolean listContainsProjectId1 = listByProjectId.contains(savedDocument1);
         Assertions.assertTrue(listContainsProjectId1);
     }
 

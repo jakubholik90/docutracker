@@ -38,7 +38,11 @@ public class DocumentRepositoryAdapter implements DocumentRepository {
 
     @Override
     public List<Document> findByProjectId(int projectId) {
-        return List.of();
+        List<DocumentEntity> documentEntityList = documentJpaRepository.findByProjectId(projectId);
+        List<Document> documentList = documentEntityList.stream()
+                .map(DocumentMapper::mapToDocument)
+                .toList();
+        return documentList;
     }
 
     @Override

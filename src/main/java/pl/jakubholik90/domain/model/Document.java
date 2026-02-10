@@ -5,6 +5,7 @@ import pl.jakubholik90.infrastructure.exception.DocumentException;
 import pl.jakubholik90.infrastructure.exception.ProjectException;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Builder
@@ -39,5 +40,27 @@ public class Document {
 
     public RecipientType getCurrentRecipient() {
         return currentRecipient;
+    }
+
+    @Override
+    public String toString() {
+        return "Document{" +
+                "documentId=" + documentId +
+                ", fileName='" + fileName + '\'' +
+                ", projectId=" + projectId +
+                '}';
+    }
+
+
+    // overriding equals() & hashCode() in order to List.contains(Document) working (comparing by documentId and projectId)
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Document document)) return false;
+        return Objects.equals(getDocumentId(), document.getDocumentId()) && Objects.equals(getProjectId(), document.getProjectId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getDocumentId(), getProjectId());
     }
 }
