@@ -14,8 +14,10 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import pl.jakubholik90.adapter.out.persistence.jpa.DocumentJpaRepository;
 import pl.jakubholik90.adapter.out.persistence.jpa.DocumentMapper;
 import pl.jakubholik90.domain.model.Document;
+import pl.jakubholik90.domain.model.DocumentStatus;
 import pl.jakubholik90.domain.model.RecipientType;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,9 +32,10 @@ public class DocumentRepositoryAdapterTest {
     @Autowired
     private DocumentRepositoryAdapter documentRepositoryAdapter;
 
-    private Document document1;
-
-    private Document document2;
+    private Document document1; // new document, before saving by JPA, with Id==null
+    private Document document2; // new document, before saving by JPA, with Id==null
+    private Document savedDocument1; // saved document, with Id!=null
+    private Document savedDocument2; // saved document, with Id!=null
 
     @Autowired
     private DocumentJpaRepository documentJpaRepository;
@@ -50,18 +53,33 @@ public class DocumentRepositoryAdapterTest {
         documentJpaRepository.deleteAll();
         document1 = Document.builder()
                 .currentRecipient(RecipientType.SUBCONTRACTOR)
+                .fileName("Test1.pdf")
+                .lastStatusChange(LocalDateTime.now())
+                .projectId(1)
+                .status(DocumentStatus.AT_SUBCONTRACTOR)
                 .build();
         document2 = Document.builder()
-                .currentRecipient(RecipientType.INTERNAL_REVIEWER).
-                build();
-        documentRepositoryAdapter.save(document1);
-        documentRepositoryAdapter.save(document2);
+                .currentRecipient(RecipientType.INTERNAL_REVIEWER)
+                .fileName("Test2.pdf")
+                .lastStatusChange(LocalDateTime.of(2020,12,31,12,30))
+                .projectId(2)
+                .status(DocumentStatus.AT_USER)
+                .build();
+        savedDocument1 = documentRepositoryAdapter.save(document1); // JPa creates documentId here
+        savedDocument2 = documentRepositoryAdapter.save(document2); // JPa creates documentId here
+    }
+
+
+    @Test
+    public void checkIfExistsById() {
+        boolean ifExists = documentRepositoryAdapter.ifExistsByDocumentId(savedDocument1.getDocumentId());
+        Assertions.assertTrue(ifExists);
     }
 
     @Test
     public void shouldSaveDocument() {
-        System.out.println("mockedDocument.getDocumentId():" + document1.getDocumentId());
-        boolean b = documentRepositoryAdapter.ifExistsByDocumentId(document1.getDocumentId());
+        boolean b = documentRepositoryAdapter.ifExistsByDocumentId(savedDocument1.getDocumentId());
+        System.out.println("test shouldSaveDocument(), savedDocument1.getDocumentId(): " + savedDocument1.getDocumentId());
         Assertions.assertTrue(b);
     }
 
@@ -94,11 +112,6 @@ public class DocumentRepositoryAdapterTest {
         Assertions.assertTrue(empty);
     }
 
-    @Test
-    public void checkIfExistsById() {
-        boolean ifExists = documentRepositoryAdapter.ifExistsByDocumentId(document1.getDocumentId());
-        Assertions.assertTrue(ifExists);
-    }
 
 
 

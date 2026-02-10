@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Component
 public class DocumentMapper {
 
-    public DocumentEntity mapToEntity(Document document) {
+    public static DocumentEntity mapToEntity(Document document) {
         String fileName = document.getFileName();
         Integer projectId = document.getProjectId();
         DocumentStatus status = document.getStatus();
@@ -32,7 +32,7 @@ public class DocumentMapper {
         return returnEntity;
     };
 
-    public Document mapToDocument(DocumentEntity documentEntity) {
+    public static Document mapToDocument(DocumentEntity documentEntity) {
         Document returnDocument = Document.builder()
                 .documentId(documentEntity.getDocumentId())
                 .fileName(documentEntity.getFileName())

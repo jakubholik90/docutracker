@@ -14,20 +14,21 @@ import java.util.Optional;
 @Repository
 public class DocumentRepositoryAdapter implements DocumentRepository {
 
-    private DocumentJpaRepository documentJpaRepository;
+    private final DocumentJpaRepository documentJpaRepository;
 
-    private DocumentMapper documentMapper;
+    private final DocumentMapper documentMapper;
 
-    @Autowired
     public DocumentRepositoryAdapter(DocumentJpaRepository documentJpaRepository, DocumentMapper documentMapper) {
         this.documentJpaRepository = documentJpaRepository;
         this.documentMapper = documentMapper;
     }
 
     @Override
-    public void save(Document document) {
-        DocumentEntity documentEntity = documentMapper.mapToEntity(document);
-        documentJpaRepository.save(documentEntity);
+    public Document save(Document document) {
+        DocumentEntity documentEntity = documentMapper.mapToEntity(document); // Id == null
+        DocumentEntity savedEntity = documentJpaRepository.save(documentEntity); // JPA creates new ID != null
+        Document savedDocument = DocumentMapper.mapToDocument(savedEntity); // Id != null
+        return savedDocument;
     }
 
     @Override
@@ -46,6 +47,7 @@ public class DocumentRepositoryAdapter implements DocumentRepository {
 
     @Override
     public boolean ifExistsByDocumentId(int documentId) {
-        return false;
+        boolean returnBool = documentJpaRepository.existsById(documentId);
+        return returnBool;
     }
 }

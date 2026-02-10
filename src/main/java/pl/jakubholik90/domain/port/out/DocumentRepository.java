@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public interface DocumentRepository {
 
-    public void save(Document document);
+    public Document save(Document document);
 
     public Optional<Document> findByDocumentId(int documentId);
 
