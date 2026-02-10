@@ -115,9 +115,10 @@ public class DocumentRepositoryAdapterTest {
 
     @Test
     public void shouldDeleteDocument() {
-        documentRepositoryAdapter.deleteByDocumentId(document1.getDocumentId());
-        boolean empty = documentRepositoryAdapter.findByDocumentId(document1.getDocumentId()).isEmpty();
-        Assertions.assertTrue(empty);
+        Integer documentId = savedDocument1.getDocumentId();
+        Assertions.assertTrue(documentRepositoryAdapter.ifExistsByDocumentId(documentId));
+        documentRepositoryAdapter.deleteByDocumentId(documentId);
+        Assertions.assertFalse(documentRepositoryAdapter.ifExistsByDocumentId(documentId));
     }
 
 

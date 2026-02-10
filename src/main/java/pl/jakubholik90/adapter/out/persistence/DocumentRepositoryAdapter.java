@@ -66,6 +66,11 @@ public class DocumentRepositoryAdapter implements DocumentRepository {
 
     @Override
     public void deleteByDocumentId(int documentId) {
+        Optional<DocumentEntity> entityById = documentJpaRepository.findById(documentId);
+        boolean isEmpty = entityById.isEmpty();
+        if (!isEmpty) {
+            documentJpaRepository.deleteById(documentId);
+        }
     }
 
     @Override
