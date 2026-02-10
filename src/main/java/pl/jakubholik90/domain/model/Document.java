@@ -52,15 +52,15 @@ public class Document {
     }
 
 
-    // overriding equals() & hashCode() in order to List.contains(Document) working (comparing by documentId and projectId)
+    // overriding equals() & hashCode() in order to List.contains(Document) working (comparing by documentId)
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof Document document)) return false;
-        return Objects.equals(getDocumentId(), document.getDocumentId()) && Objects.equals(getProjectId(), document.getProjectId());
+        return Objects.equals(getDocumentId(), document.getDocumentId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getDocumentId(), getProjectId());
+        return Objects.hash(getDocumentId());
     }
 }

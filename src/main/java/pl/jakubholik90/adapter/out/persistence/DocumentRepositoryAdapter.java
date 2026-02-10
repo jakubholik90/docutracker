@@ -33,7 +33,14 @@ public class DocumentRepositoryAdapter implements DocumentRepository {
 
     @Override
     public Optional<Document> findByDocumentId(int documentId) {
-        return Optional.empty();
+        Optional<DocumentEntity> entityOptional = documentJpaRepository.findById(documentId);
+        Optional<Document> returnOptionalDocument;
+        if(entityOptional.isEmpty()) {
+            returnOptionalDocument = Optional.empty();
+        } else {
+            returnOptionalDocument = Optional.of(DocumentMapper.mapToDocument(entityOptional.get()));
+        }
+        return returnOptionalDocument;
     }
 
     @Override

@@ -85,13 +85,20 @@ public class DocumentRepositoryAdapterTest {
 
     @Test
     public void shouldFindDocumentById() {
-        Optional<Document> foundDocument = documentRepositoryAdapter.findByDocumentId(document1.getDocumentId());
-        Assertions.assertEquals(document1.getDocumentId(),foundDocument.get().getDocumentId());
+        Integer documentId = savedDocument1.getDocumentId();
+        System.out.println("documentId: " + documentId);
+        documentJpaRepository.findAll().stream()
+                .map(DocumentMapper::mapToDocument)
+                .forEach(System.out::println);
+        Optional<Document> foundDocument = documentRepositoryAdapter.findByDocumentId(savedDocument1.getDocumentId());
+        System.out.println("foundDocument: " + foundDocument);
+        System.out.println("foundDocument.get().getDocumentId(): " + foundDocument.get().getDocumentId());
+        Assertions.assertEquals(documentId,foundDocument.get().getDocumentId());
     }
 
     @Test
     public void shouldReturnEmptyWhenNotFound() {
-        Optional<Document> foundDocument = documentRepositoryAdapter.findByDocumentId(document1.getDocumentId() + 1);
+        Optional<Document> foundDocument = documentRepositoryAdapter.findByDocumentId(savedDocument1.getDocumentId() + 1);
         Assertions.assertTrue(foundDocument.isEmpty());
     }
 
