@@ -18,6 +18,7 @@ import pl.jakubholik90.domain.model.DocumentStatus;
 import pl.jakubholik90.domain.model.RecipientType;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,8 +38,8 @@ public class DocumentRepositoryAdapterTest {
     private Document savedDocument1; // saved document, with Id!=null
     private Document savedDocument2; // saved document, with Id!=null
 
-    @Autowired
-    private DocumentJpaRepository documentJpaRepository;
+//    @Autowired
+//    private DocumentJpaRepository documentJpaRepository;
 
 
     @Container
@@ -50,7 +51,7 @@ public class DocumentRepositoryAdapterTest {
 
     @BeforeEach
     public void setUp() {
-        documentJpaRepository.deleteAll();
+        documentRepositoryAdapter.deleteAll();
         document1 = Document.builder()
                 .currentRecipient(RecipientType.SUBCONTRACTOR)
                 .fileName("Test1.pdf")
@@ -86,20 +87,20 @@ public class DocumentRepositoryAdapterTest {
     @Test
     public void shouldFindDocumentById() {
         Integer documentId = savedDocument1.getDocumentId();
-        System.out.println("documentId: " + documentId);
-        documentJpaRepository.findAll().stream()
-                .map(DocumentMapper::mapToDocument)
-                .forEach(System.out::println);
         Optional<Document> foundDocument = documentRepositoryAdapter.findByDocumentId(savedDocument1.getDocumentId());
-        System.out.println("foundDocument: " + foundDocument);
-        System.out.println("foundDocument.get().getDocumentId(): " + foundDocument.get().getDocumentId());
         Assertions.assertEquals(documentId,foundDocument.get().getDocumentId());
     }
 
     @Test
     public void shouldReturnEmptyWhenNotFound() {
-        Optional<Document> foundDocument = documentRepositoryAdapter.findByDocumentId(savedDocument1.getDocumentId() + 1);
-        Assertions.assertTrue(foundDocument.isEmpty());
+        List<Document> listDocuments = documentRepositoryAdapter.findAll();
+        List<Integer> listOfIds = listDocuments.stream()
+                .map(Document::getDocumentId)
+                .toList();
+        Integer maxId = Collections.max(listOfIds);
+        Integer maxIdPlusOne = maxId + 1;
+        boolean ifExistsMaxIdPlusOne = documentRepositoryAdapter.ifExistsByDocumentId(maxIdPlusOne);
+        Assertions.assertFalse(ifExistsMaxIdPlusOne);
     }
 
     @Test

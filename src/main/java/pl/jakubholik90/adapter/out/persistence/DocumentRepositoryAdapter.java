@@ -31,6 +31,18 @@ public class DocumentRepositoryAdapter implements DocumentRepository {
         return savedDocument;
     }
 
+    public void deleteAll() {
+        documentJpaRepository.deleteAll();
+    }
+
+    public List<Document> findAll() {
+        List<DocumentEntity> listEntities = documentJpaRepository.findAll();
+        List<Document> listDocuments = listEntities.stream()
+                .map(DocumentMapper::mapToDocument)
+                .toList();
+        return listDocuments;
+    }
+
     @Override
     public Optional<Document> findByDocumentId(int documentId) {
         Optional<DocumentEntity> entityOptional = documentJpaRepository.findById(documentId);
