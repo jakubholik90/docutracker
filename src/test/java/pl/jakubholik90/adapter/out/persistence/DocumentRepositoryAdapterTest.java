@@ -18,6 +18,7 @@ import pl.jakubholik90.domain.model.DocumentStatus;
 import pl.jakubholik90.domain.model.RecipientType;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -122,10 +123,23 @@ public class DocumentRepositoryAdapterTest {
     }
 
     @Test
-    public void checkFindAll() {}
+    public void checkFindAll() {
+        List<Document> allFoundDocuments = documentRepositoryAdapter.findAll();
+        List<Document> assertionList = new ArrayList<>();
+        assertionList.add(savedDocument1);
+        assertionList.add(savedDocument2);
+        System.out.println("allFoundDocuments: " + allFoundDocuments);
+        System.out.println("assertionList: " + assertionList);
+        Assertions.assertEquals(assertionList, allFoundDocuments);
+    }
 
     @Test
-    public void checkDelteAll() {}
+    public void checkDeleteAll() {
+        documentRepositoryAdapter.deleteAll();
+        int size = documentRepositoryAdapter.findAll().size();
+        Assertions.assertEquals(0,size);
+
+    }
 
 
 
