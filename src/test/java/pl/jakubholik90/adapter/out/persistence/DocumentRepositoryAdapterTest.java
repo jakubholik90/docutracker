@@ -121,6 +121,14 @@ public class DocumentRepositoryAdapterTest {
         Assertions.assertFalse(documentRepositoryAdapter.ifExistsByDocumentId(documentId));
     }
 
+    @Test
+    public void checkFindAll() {}
+
+    @Test
+    public void checkDelteAll() {}
+
+
+
 
 
 

@@ -17,4 +17,8 @@ public interface DocumentRepository {
 
     public boolean ifExistsByDocumentId(int documentId);
 
+    public void deleteAll();
+
+    public List<Document> findAll();
+
 }

@@ -31,10 +31,12 @@ public class DocumentRepositoryAdapter implements DocumentRepository {
         return savedDocument;
     }
 
+    @Override
     public void deleteAll() {
         documentJpaRepository.deleteAll();
     }
 
+    @Override
     public List<Document> findAll() {
         List<DocumentEntity> listEntities = documentJpaRepository.findAll();
         List<Document> listDocuments = listEntities.stream()
