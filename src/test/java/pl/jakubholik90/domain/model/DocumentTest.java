@@ -1,6 +1,5 @@
 package pl.jakubholik90.domain.model;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
@@ -24,7 +23,7 @@ public class DocumentTest {
         assertTrue(document.getLastStatusChange().isBefore(LocalDateTime.now())); //checking assign lastStatusChange
         assertTrue(document.getDocumentId()>=0); //checking assign documentId
         System.out.println(document.getLastStatusChange());
-        assertEquals(DocumentStatus.NONE,document.getStatus()); // checking assign documentStatus
+        assertEquals(DocumentStatus.DRAFT,document.getStatus()); // checking assign documentStatus
     }
 
     @Test

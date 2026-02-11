@@ -3,7 +3,6 @@ package pl.jakubholik90.adapter.out.persistence;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -11,19 +10,16 @@ import org.springframework.context.annotation.Import;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import pl.jakubholik90.adapter.out.persistence.jpa.DocumentJpaRepository;
 import pl.jakubholik90.adapter.out.persistence.jpa.DocumentMapper;
 import pl.jakubholik90.domain.model.Document;
 import pl.jakubholik90.domain.model.DocumentStatus;
 import pl.jakubholik90.domain.model.RecipientType;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.mockito.Mockito.when;
 
 @DataJpaTest
 @Testcontainers //handling test containers
@@ -39,16 +35,13 @@ public class DocumentRepositoryAdapterTest {
     private Document savedDocument1; // saved document, with Id!=null
     private Document savedDocument2; // saved document, with Id!=null
 
-//    @Autowired
-//    private DocumentJpaRepository documentJpaRepository;
-
-
-    @Container
-    static PostgreSQLContainer<?> postgres =
-            new PostgreSQLContainer<>("postgres:16-alpine")
-                    .withDatabaseName("testdb")
-                    .withUsername("test")
-                    .withPassword("test");
+//    // sprawdzic czy to jest potrzebne
+//    @Container
+//    static PostgreSQLContainer<?> postgres =
+//            new PostgreSQLContainer<>("postgres:16-alpine")
+//                    .withDatabaseName("testdb")
+//                    .withUsername("test")
+//                    .withPassword("test");
 
     @BeforeEach
     public void setUp() {
