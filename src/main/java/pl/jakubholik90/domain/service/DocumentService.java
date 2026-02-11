@@ -25,7 +25,10 @@ public class DocumentService implements CreateDocumentUseCase {
             throw new ProjectException("projectId cannot be null");
         }
 
-        Document returnDocument = new Document(createDocumentDTO.fileName(), createDocumentDTO.projectId());
+        Document returnDocument = Document.builder()
+                .fileName(createDocumentDTO.fileName())
+                .projectId(createDocumentDTO.projectId())
+                        .build();
 
         documentRepository.save(returnDocument);
 

@@ -1,43 +1,28 @@
 package pl.jakubholik90.domain.model;
 
+import lombok.Builder;
 import pl.jakubholik90.infrastructure.exception.DocumentException;
 import pl.jakubholik90.infrastructure.exception.ProjectException;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Builder
 public class Document {
-
-    private static final AtomicInteger idCounter = new AtomicInteger(0);
-    private final int documentId;
+    private Integer documentId; // Integer bo domyslna wartosc to null a przy int to 0
     private String fileName;
     private Integer projectId;
     private DocumentStatus status;
     private RecipientType currentRecipient;
     private LocalDateTime lastStatusChange;
 
-    public Document(String fileName, Integer projectId) {
-        if (fileName == null) {
-            throw new DocumentException("fileName cannot be null");
-        }
-
-        if (projectId == null) {
-            throw new ProjectException("projectId cannot be null");
-        }
-
-        this.documentId = idCounter.getAndIncrement();
-        this.fileName = fileName;
-        this.projectId = projectId;
-        this.status=DocumentStatus.NONE;
-        this.lastStatusChange= LocalDateTime.now();
-    }
-
     // getters only, no setters
     public String getFileName() {
         return fileName;
     }
 
-    public int getDocumentId() {
+    public Integer getDocumentId() {
         return documentId;
     }
 
@@ -53,4 +38,29 @@ public class Document {
         return lastStatusChange;
     }
 
+    public RecipientType getCurrentRecipient() {
+        return currentRecipient;
+    }
+
+    @Override
+    public String toString() {
+        return "Document{" +
+                "documentId=" + documentId +
+                ", fileName='" + fileName + '\'' +
+                ", projectId=" + projectId +
+                '}';
+    }
+
+
+    // overriding equals() & hashCode() in order to List.contains(Document) working (comparing by documentId)
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Document document)) return false;
+        return Objects.equals(getDocumentId(), document.getDocumentId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getDocumentId());
+    }
 }
