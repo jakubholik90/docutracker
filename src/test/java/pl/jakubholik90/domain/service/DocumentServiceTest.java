@@ -9,6 +9,8 @@ import pl.jakubholik90.domain.model.DocumentStatus;
 import pl.jakubholik90.domain.model.RecipientType;
 import pl.jakubholik90.domain.port.in.CreateDocumentDTO;
 import pl.jakubholik90.domain.port.out.DocumentRepository;
+import pl.jakubholik90.infrastructure.exception.DocumentException;
+import pl.jakubholik90.infrastructure.exception.ProjectException;
 
 import java.time.LocalDateTime;
 
@@ -64,9 +66,15 @@ public class DocumentServiceTest {
     }
 
     @Test
-    public void shouldThrowExceptionWhenFileNameIsNull() {}
+    public void shouldThrowExceptionWhenFileNameIsNull() {
+        CreateDocumentDTO createDocumentDTO = new CreateDocumentDTO(null, 1, RecipientType.SUBCONTRACTOR);
+        Assertions.assertThrows(DocumentException.class,() -> documentService.createDocument(createDocumentDTO));
+    }
 
     @Test
-    public void shouldThrowExceptionWhenProjectIdIsNull() {}
+    public void shouldThrowExceptionWhenProjectIdIsNull() {
+        CreateDocumentDTO createDocumentDTO = new CreateDocumentDTO("test.pdf", null, RecipientType.SUBCONTRACTOR);
+        Assertions.assertThrows(ProjectException.class,() -> documentService.createDocument(createDocumentDTO));
+    }
 
 }
