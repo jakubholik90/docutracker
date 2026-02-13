@@ -20,15 +20,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest //spring adnotation for testing web controllers
 public class DocumentControllerTest {
 
-    private DocumentController documentController;
-
     @MockitoBean // mock for spring beans
     CreateDocumentUseCase createDocumentUseCase;
 
     @Autowired
     MockMvc mockMvc; // MockMvc = simulating HTTP request without starting a server
 
-    @Test
+    @Test // testing if controller works
     public void shouldCreateDocumentAndReturn201() throws Exception {
         // given
         Document mockDocument = Document.builder()
@@ -36,15 +34,15 @@ public class DocumentControllerTest {
                 .fileName("test.pdf")
                 .status(DocumentStatus.DRAFT)
                 .build();
-        when(createDocumentUseCase.createDocument(any(CreateDocumentDTO.class))).thenReturn(mockDocument);
-        // when
+        when(createDocumentUseCase.createDocument(any())).thenReturn(mockDocument);
+
         String jsonString = """
         {
-            "fileName": "test.pdf",
-                "projectId": 1,
-                "initialRecipient": "SUBCONTRACTOR"
+            "fileName": "test.pdf"
         }
         """;
+
+        // when
         mockMvc.perform(
                 post("/api/documents")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -52,6 +50,7 @@ public class DocumentControllerTest {
         )
         // then
                 .andExpect(status().isCreated())
+                .andExpect(status().is(201))
                 .andExpect(header().exists("Location"))
                 .andExpect((header().string("Location","/api/documents/123")))
                 .andExpect(jsonPath("$.id").value(123))
@@ -59,6 +58,28 @@ public class DocumentControllerTest {
                 .andExpect(jsonPath("$.status").value("DRAFT"));
 
         verify(createDocumentUseCase,times(1)).createDocument(any(CreateDocumentDTO.class));
+    }
+
+    @Test // testing in controller returns error
+    public void shouldReturn400WhenFileNameIsEmpty() throws Exception {
+        // given
+        String jsonRequest = """
+                {
+                  "fileName": ""
+                }
+                """;
+        // when
+        mockMvc.perform(
+                post("/api/documents")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonRequest)
+        )
+        // then
+        .andExpect(status().isBadRequest());
+
+        verify(createDocumentUseCase,never()).createDocument(any());
+
+
     }
 
 
