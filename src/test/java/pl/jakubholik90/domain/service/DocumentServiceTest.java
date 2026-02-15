@@ -77,4 +77,17 @@ public class DocumentServiceTest {
         Assertions.assertThrows(ProjectException.class,() -> documentService.createDocument(createDocumentDTO));
     }
 
+    @Test
+    public void checkGetAllDocuments() {
+    }
+
+    @Test
+    public void checkGetDocumentById() {
+
+    }
+
+    @Test
+    public void checkGetDocumentsByProjectId() {
+    }
+
 }

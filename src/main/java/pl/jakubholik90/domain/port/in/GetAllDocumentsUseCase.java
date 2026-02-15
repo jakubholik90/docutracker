@@ -6,6 +6,6 @@ import pl.jakubholik90.domain.common.PageResult;
 
 public interface GetAllDocumentsUseCase {
 
-    public PageResult<Document> execute(PageRequest pageRequest);
+    public PageResult<Document> getAllDocuments(PageRequest pageRequest);
 
 }

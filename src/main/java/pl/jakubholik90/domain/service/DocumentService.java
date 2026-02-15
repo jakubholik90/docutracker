@@ -1,16 +1,22 @@
 package pl.jakubholik90.domain.service;
 
+import pl.jakubholik90.domain.common.PageRequest;
+import pl.jakubholik90.domain.common.PageResult;
 import pl.jakubholik90.domain.model.Document;
 import pl.jakubholik90.domain.model.DocumentStatus;
-import pl.jakubholik90.domain.port.in.CreateDocumentDTO;
-import pl.jakubholik90.domain.port.in.CreateDocumentUseCase;
+import pl.jakubholik90.domain.port.in.*;
 import pl.jakubholik90.domain.port.out.DocumentRepository;
 import pl.jakubholik90.infrastructure.exception.DocumentException;
 import pl.jakubholik90.infrastructure.exception.ProjectException;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
-public class DocumentService implements CreateDocumentUseCase {
+public class DocumentService implements CreateDocumentUseCase,
+        GetAllDocumentsUseCase,
+        GetDocumentByIdUseCase,
+        GetDocumentsByProjectIdUseCase {
 
     private final DocumentRepository documentRepository;
 
@@ -39,5 +45,20 @@ public class DocumentService implements CreateDocumentUseCase {
         Document savedDocument = documentRepository.save(newDocument);
 
         return savedDocument;
+    }
+
+    @Override
+    public PageResult<Document> getAllDocuments(PageRequest pageRequest) {
+        return null;
+    }
+
+    @Override
+    public Optional<Document> getDocumentById(Integer id) {
+        return Optional.empty();
+    }
+
+    @Override
+    public List<Document> getDocumentsByProjectId(Integer projectId) {
+        return List.of();
     }
 }

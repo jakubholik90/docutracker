@@ -6,6 +6,6 @@ import java.util.List;
 
 public interface GetDocumentsByProjectIdUseCase {
 
-    public List<Document> execute(Integer projectId);
+    public List<Document> getDocumentsByProjectId(Integer projectId);
 
 }
