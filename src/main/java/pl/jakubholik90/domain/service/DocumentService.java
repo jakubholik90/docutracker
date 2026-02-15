@@ -58,7 +58,7 @@ public class DocumentService implements CreateDocumentUseCase,
     }
 
     @Override
-    public List<Document> getDocumentsByProjectId(Integer projectId) {
+    public List<Document> getDpcumentsByProjectId(Integer projectId) {
         return List.of();
     }
 }
