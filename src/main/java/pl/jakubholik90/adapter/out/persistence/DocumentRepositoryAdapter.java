@@ -2,12 +2,16 @@ package pl.jakubholik90.adapter.out.persistence;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import pl.jakubholik90.Main;
 import pl.jakubholik90.adapter.out.persistence.jpa.DocumentJpaRepository;
 import pl.jakubholik90.adapter.out.persistence.jpa.DocumentMapper;
 import pl.jakubholik90.adapter.out.persistence.jpa.entity.DocumentEntity;
+import pl.jakubholik90.domain.common.PageRequest;
+import pl.jakubholik90.domain.common.PageResult;
 import pl.jakubholik90.domain.model.Document;
 import pl.jakubholik90.domain.port.out.DocumentRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,12 +41,33 @@ public class DocumentRepositoryAdapter implements DocumentRepository {
     }
 
     @Override
-    public List<Document> findAll() {
+    public int count() {
+        return (int) documentJpaRepository.count();
+    }
+
+    @Override
+    public PageResult<Document> findAll(PageRequest pageRequest) {
         List<DocumentEntity> listEntities = documentJpaRepository.findAll();
         List<Document> listDocuments = listEntities.stream()
                 .map(DocumentMapper::mapToDocument)
                 .toList();
-        return listDocuments;
+        List<Document> listDocumentsCropped = new ArrayList<>();
+        int countOfPages = (int) Math.ceil((double) listDocuments.size() / pageRequest.size());
+        if (pageRequest.page() <= countOfPages-1 && pageRequest.page() >= 0) {
+            for (int i = 0; i < pageRequest.size(); i++) {
+                int oldIndexToGet = pageRequest.page() * pageRequest.size() + i;
+                if (oldIndexToGet <= listDocuments.size()) {
+                    listDocumentsCropped.add(listDocuments.get(oldIndexToGet));
+                }
+            }
+        }
+        PageResult<Document> pageResult = new PageResult<>(
+                listDocumentsCropped,
+                pageRequest.page(),
+                pageRequest.size(),
+                listDocuments.size(),
+                countOfPages);
+        return pageResult;
     }
 
     @Override

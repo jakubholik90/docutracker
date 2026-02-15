@@ -1,5 +1,7 @@
 package pl.jakubholik90.domain.port.out;
 
+import pl.jakubholik90.domain.common.PageRequest;
+import pl.jakubholik90.domain.common.PageResult;
 import pl.jakubholik90.domain.model.Document;
 
 import java.util.List;
@@ -19,6 +21,9 @@ public interface DocumentRepository {
 
     public void deleteAll();
 
-    public List<Document> findAll();
+    public PageResult<Document> findAll(PageRequest pageRequest);
+
+    public int count();
+
 
 }
