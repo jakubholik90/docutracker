@@ -49,16 +49,16 @@ public class DocumentService implements CreateDocumentUseCase,
 
     @Override
     public PageResult<Document> getAllDocuments(PageRequest pageRequest) {
-        return null;
+        return documentRepository.findAll(pageRequest);
     }
 
     @Override
     public Optional<Document> getDocumentById(Integer id) {
-        return Optional.empty();
+        return documentRepository.findByDocumentId(id);
     }
 
     @Override
-    public List<Document> getDpcumentsByProjectId(Integer projectId) {
-        return List.of();
+    public List<Document> getDocumentsByProjectId(Integer projectId) {
+        return documentRepository.findByProjectId(projectId);
     }
 }
