@@ -1,11 +1,14 @@
 package pl.jakubholik90.domain.service;
 
 import pl.jakubholik90.domain.model.Document;
+import pl.jakubholik90.domain.model.DocumentStatus;
 import pl.jakubholik90.domain.port.in.CreateDocumentDTO;
 import pl.jakubholik90.domain.port.in.CreateDocumentUseCase;
 import pl.jakubholik90.domain.port.out.DocumentRepository;
 import pl.jakubholik90.infrastructure.exception.DocumentException;
 import pl.jakubholik90.infrastructure.exception.ProjectException;
+
+import java.time.LocalDateTime;
 
 public class DocumentService implements CreateDocumentUseCase {
 
@@ -25,13 +28,16 @@ public class DocumentService implements CreateDocumentUseCase {
             throw new ProjectException("projectId cannot be null");
         }
 
-        Document returnDocument = Document.builder()
+        Document newDocument = Document.builder()
                 .fileName(createDocumentDTO.fileName())
                 .projectId(createDocumentDTO.projectId())
+                .status(DocumentStatus.DRAFT)
+                .currentRecipient(createDocumentDTO.initialRecipient())
+                .lastStatusChange(LocalDateTime.now())
                         .build();
 
-        documentRepository.save(returnDocument);
+        Document savedDocument = documentRepository.save(newDocument);
 
-        return returnDocument;
+        return savedDocument;
     }
 }
