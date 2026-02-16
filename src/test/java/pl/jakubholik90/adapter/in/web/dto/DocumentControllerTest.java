@@ -7,6 +7,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultMatcher;
 import pl.jakubholik90.adapter.in.web.DocumentController;
 import pl.jakubholik90.domain.model.Document;
 import pl.jakubholik90.domain.model.DocumentStatus;
@@ -14,8 +15,12 @@ import pl.jakubholik90.domain.model.RecipientType;
 import pl.jakubholik90.domain.port.in.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -121,7 +126,7 @@ public class DocumentControllerTest {
         verify(getDocumentByIdUseCase,times(1)).getDocumentById(id);
     }
 
-    @Test
+    @Test // testing GetDocumentByIdeUseCase
     public void shouldReturn404WhenNotFound() throws Exception {
         int nonExistentId = 99;
         when(getDocumentByIdUseCase.getDocumentById(nonExistentId)).thenReturn(Optional.empty());
@@ -130,6 +135,36 @@ public class DocumentControllerTest {
                 .andExpect(status().isNotFound());
 
         verify(getDocumentByIdUseCase,times(1)).getDocumentById(nonExistentId);
+    }
+
+    @Test // testing GetDocumentsByProjectIdUseCase
+    public void shouldReturn202AndListOfDocumentsByProjectId() throws Exception {
+        int projectId = 1;
+
+        Document mockDocument0 = Document.builder()
+                .documentId(0)
+                .projectId(1)
+                .build();
+        Document mockDocument1 = Document.builder()
+                .documentId(1)
+                .projectId(1)
+                .build();
+
+        List<Document> listOfMockedDocuments = new ArrayList<>();
+        listOfMockedDocuments.add(mockDocument0);
+        listOfMockedDocuments.add(mockDocument1);
+
+        when(getDocumentsByProjectIdUseCase.getDocumentsByProjectId(projectId)).thenReturn(listOfMockedDocuments);
+
+        mockMvc.perform(get("/api/documents").param("projectId", "101"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$",hasSize(2)))
+                .andExpect(jsonPath("$[0].projectId").value(projectId))
+                .andExpect(jsonPath("$[0].id").value(greaterThanOrEqualTo(0)))
+                .andExpect(jsonPath("$[1].projectId").value(projectId))
+                .andExpect(jsonPath("$[1].id").value(greaterThanOrEqualTo(0)));
+
+        verify(getDocumentsByProjectIdUseCase,times(1)).getDocumentsByProjectId(projectId);
     }
 
 
