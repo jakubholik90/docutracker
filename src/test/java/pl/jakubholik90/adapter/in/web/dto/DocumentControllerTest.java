@@ -121,5 +121,16 @@ public class DocumentControllerTest {
         verify(getDocumentByIdUseCase,times(1)).getDocumentById(id);
     }
 
+    @Test
+    public void shouldReturn404WhenNotFound() throws Exception {
+        int nonExistentId = 99;
+        when(getDocumentByIdUseCase.getDocumentById(nonExistentId)).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/documents/" + nonExistentId))
+                .andExpect(status().isNotFound());
+
+        verify(getDocumentByIdUseCase,times(1)).getDocumentById(nonExistentId);
+    }
+
 
 }
