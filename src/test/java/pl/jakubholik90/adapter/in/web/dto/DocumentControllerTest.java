@@ -1,5 +1,6 @@
 package pl.jakubholik90.adapter.in.web.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -8,16 +9,17 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.util.MultiValueMap;
 import pl.jakubholik90.adapter.in.web.DocumentController;
+import pl.jakubholik90.domain.common.PageRequest;
+import pl.jakubholik90.domain.common.PageResult;
 import pl.jakubholik90.domain.model.Document;
 import pl.jakubholik90.domain.model.DocumentStatus;
 import pl.jakubholik90.domain.model.RecipientType;
 import pl.jakubholik90.domain.port.in.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -26,6 +28,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.web.servlet.function.RequestPredicates.param;
 
 
 @WebMvcTest //spring adnotation for testing web controllers
@@ -46,7 +49,7 @@ public class DocumentControllerTest {
     @Autowired
     MockMvc mockMvc; // MockMvc = simulating HTTP request without starting a server
 
-    @Test // testing if controller works
+    @Test // testing CreateDocumentUseCase
     public void shouldCreateDocumentAndReturn201() throws Exception {
         // given
         Document mockDocument = Document.builder()
@@ -80,7 +83,7 @@ public class DocumentControllerTest {
         verify(createDocumentUseCase,times(1)).createDocument(any(CreateDocumentDTO.class));
     }
 
-    @Test // testing in controller returns error
+    @Test // testing CreateDocumentUseCase
     public void shouldReturn400WhenFileNameIsEmpty() throws Exception {
         // given
         String jsonRequest = """
@@ -166,6 +169,52 @@ public class DocumentControllerTest {
 
         verify(getDocumentsByProjectIdUseCase,times(1)).getDocumentsByProjectId(projectId);
     }
+
+    @Test // testing GetALlDocumentsUseCase
+    public void shouldReturn200AndAllDocumentsInPage() throws Exception {
+        int page = 1;
+        int size = 2;
+        int totalElements = 5;
+        int totalPages = 3;
+
+        PageRequest pageRequest = new PageRequest(page, size);
+
+        Document mockDocument2 = Document.builder()
+                .documentId(2)
+                .build();
+        Document mockDocument3 = Document.builder()
+                .documentId(3)
+                .build();
+
+        List<Document> content = new ArrayList<>();
+        content.add(mockDocument2);
+        content.add(mockDocument3);
+
+        PageResult<Document> pageResult = new PageResult<>(
+                content,
+                page,
+                size,
+                totalElements,
+                totalPages);
+
+        when(getAllDocumentsUseCase.getAllDocuments(pageRequest)).thenReturn(pageResult);
+
+        mockMvc.perform(get("/api/documents")
+                .param("page",String.valueOf(page))
+                .param("size",String.valueOf(size)))
+                .andExpect(status().isOk())
+               //  .andExpect(jsonPath("$.content").value(projectId))
+                .andExpect(jsonPath("$.page").value(page))
+                .andExpect(jsonPath("$.size").value(size))
+                .andExpect(jsonPath("$.totalElements").value(totalElements))
+                .andExpect(jsonPath("$.totalPages").value(totalPages))
+                .andExpect(jsonPath("$.content[0].id").value(mockDocument2.getDocumentId()))
+                .andExpect(jsonPath("$.content[1].id").value(mockDocument3.getDocumentId()))
+                .andExpect(jsonPath("$.content",hasSize(content.size())));
+
+        verify(getAllDocumentsUseCase,times(1)).getAllDocuments(pageRequest);
+    }
+
 
 
 }

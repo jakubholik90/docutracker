@@ -14,4 +14,8 @@ public record DocumentResponse (
         RecipientType currentRecipient,
         @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
         LocalDateTime lastStatusChange) {
+
+        public DocumentResponse(Integer id) {
+                this(id, "", 0, null, null, null);
+        }
 }

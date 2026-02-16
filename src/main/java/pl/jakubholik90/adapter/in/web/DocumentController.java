@@ -87,24 +87,20 @@ public class DocumentController {
 
         List<Document> documentsByProjectId = getDocumentsByProjectIdUseCase.getDocumentsByProjectId(projectId);
 
-        if (documentsByProjectId.isEmpty()) {
-            responseEntity = ResponseEntity.notFound().build();
-        } else {
-            for (Document documentByProjectId : documentsByProjectId) {
-                DocumentResponse response = new DocumentResponse(
-                        documentByProjectId.getDocumentId(),
-                        documentByProjectId.getFileName(),
-                        documentByProjectId.getProjectId(),
-                        documentByProjectId.getStatus(),
-                        documentByProjectId.getCurrentRecipient(),
-                        documentByProjectId.getLastStatusChange()
-                );
-                listOfDocuments.add(response);
-            }
-            responseEntity = ResponseEntity
-                    .ok()
-                    .body(listOfDocuments);
+        for (Document documentByProjectId : documentsByProjectId) {
+            DocumentResponse response = new DocumentResponse(
+                    documentByProjectId.getDocumentId(),
+                    documentByProjectId.getFileName(),
+                    documentByProjectId.getProjectId(),
+                    documentByProjectId.getStatus(),
+                    documentByProjectId.getCurrentRecipient(),
+                    documentByProjectId.getLastStatusChange()
+            );
+            listOfDocuments.add(response);
         }
+        responseEntity = ResponseEntity
+                .ok()
+                .body(listOfDocuments);
 
         return responseEntity;
     }
