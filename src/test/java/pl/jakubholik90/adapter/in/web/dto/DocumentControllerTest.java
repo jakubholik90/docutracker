@@ -138,7 +138,7 @@ public class DocumentControllerTest {
     }
 
     @Test // testing GetDocumentsByProjectIdUseCase
-    public void shouldReturn202AndListOfDocumentsByProjectId() throws Exception {
+    public void shouldReturn200AndListOfDocumentsByProjectId() throws Exception {
         int projectId = 1;
 
         Document mockDocument0 = Document.builder()
@@ -156,7 +156,7 @@ public class DocumentControllerTest {
 
         when(getDocumentsByProjectIdUseCase.getDocumentsByProjectId(projectId)).thenReturn(listOfMockedDocuments);
 
-        mockMvc.perform(get("/api/documents").param("projectId", "101"))
+        mockMvc.perform(get("/api/documents").param("projectId", "1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$",hasSize(2)))
                 .andExpect(jsonPath("$[0].projectId").value(projectId))

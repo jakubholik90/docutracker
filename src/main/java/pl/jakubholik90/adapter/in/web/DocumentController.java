@@ -9,6 +9,8 @@ import pl.jakubholik90.domain.model.Document;
 import pl.jakubholik90.domain.port.in.*;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -72,6 +74,36 @@ public class DocumentController {
             responseEntity = ResponseEntity
                     .ok()
                     .body(response);
+        }
+
+        return responseEntity;
+    }
+
+    @GetMapping("api/documents")
+    public ResponseEntity<List<DocumentResponse>> getDocumentsByProjectId(@RequestParam int projectId) {
+        ResponseEntity<List<DocumentResponse>> responseEntity;
+
+        List<DocumentResponse> listOfDocuments = new ArrayList<>();
+
+        List<Document> documentsByProjectId = getDocumentsByProjectIdUseCase.getDocumentsByProjectId(projectId);
+
+        if (documentsByProjectId.isEmpty()) {
+            responseEntity = ResponseEntity.notFound().build();
+        } else {
+            for (Document documentByProjectId : documentsByProjectId) {
+                DocumentResponse response = new DocumentResponse(
+                        documentByProjectId.getDocumentId(),
+                        documentByProjectId.getFileName(),
+                        documentByProjectId.getProjectId(),
+                        documentByProjectId.getStatus(),
+                        documentByProjectId.getCurrentRecipient(),
+                        documentByProjectId.getLastStatusChange()
+                );
+                listOfDocuments.add(response);
+            }
+            responseEntity = ResponseEntity
+                    .ok()
+                    .body(listOfDocuments);
         }
 
         return responseEntity;
