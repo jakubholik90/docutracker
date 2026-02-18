@@ -39,7 +39,6 @@ public class DocumentRepositoryAdapterTest {
     private Document savedDocument1; // saved document, with Id!=null
     private Document savedDocument2; // saved document, with Id!=null
 
-//   sprawdzic czy to jest potrzebne
     @Container
     static PostgreSQLContainer<?> postgres =
             new PostgreSQLContainer<>("postgres:16-alpine")

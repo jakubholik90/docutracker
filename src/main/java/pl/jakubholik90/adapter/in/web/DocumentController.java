@@ -128,29 +128,4 @@ public class DocumentController {
         return responseEntity;
     }
 
-//    @GetMapping("api/projects")
-//    public ResponseEntity<List<DocumentResponse>> getAllDocumentsPaginated(@RequestParam int page, @RequestParam int size) {
-//        ResponseEntity<List<DocumentResponse>> responseEntity;
-//
-//        List<DocumentResponse> listOfDocuments = new ArrayList<>();
-//
-//        PageResult<Document> allDocumentsPaginated = getAllDocumentsUseCase.getAllDocuments(new PageRequest(page, size));
-//
-//        for (Document document : allDocumentsPaginated.content()) {
-//            DocumentResponse response = new DocumentResponse(
-//                    document.getDocumentId(),
-//                    document.getFileName(),
-//                    document.getProjectId(),
-//                    document.getStatus(),
-//                    document.getCurrentRecipient(),
-//                    document.getLastStatusChange()
-//            );
-//            listOfDocuments.add(response);
-//        }
-//        responseEntity = ResponseEntity
-//                .ok()
-//                .body(listOfDocuments);
-//
-//        return responseEntity;
-//    }
 }
