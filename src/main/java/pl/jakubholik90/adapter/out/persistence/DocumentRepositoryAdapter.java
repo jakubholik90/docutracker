@@ -1,6 +1,8 @@
 package pl.jakubholik90.adapter.out.persistence;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import pl.jakubholik90.Main;
 import pl.jakubholik90.adapter.out.persistence.jpa.DocumentJpaRepository;
@@ -47,26 +49,21 @@ public class DocumentRepositoryAdapter implements DocumentRepository {
 
     @Override
     public PageResult<Document> findAll(PageRequest pageRequest) {
-        List<DocumentEntity> listEntities = documentJpaRepository.findAll();
-        List<Document> listDocuments = listEntities.stream()
+        Pageable pageable = org.springframework.data.domain.PageRequest.of(
+                pageRequest.page(),
+                pageRequest.size()
+        );
+        Page<DocumentEntity> documentEntityPage = documentJpaRepository.findAll(pageable);
+        List<Document> documentList = documentEntityPage.getContent()
+                .stream()
                 .map(DocumentMapper::mapToDocument)
                 .toList();
-        List<Document> listDocumentsCropped = new ArrayList<>();
-        int countOfPages = (int) Math.ceil((double) listDocuments.size() / pageRequest.size());
-        if (pageRequest.page() <= countOfPages-1 && pageRequest.page() >= 0) {
-            for (int i = 0; i < pageRequest.size(); i++) {
-                int oldIndexToGet = pageRequest.page() * pageRequest.size() + i;
-                if (oldIndexToGet <= listDocuments.size()) {
-                    listDocumentsCropped.add(listDocuments.get(oldIndexToGet));
-                }
-            }
-        }
         PageResult<Document> pageResult = new PageResult<>(
-                listDocumentsCropped,
-                pageRequest.page(),
-                pageRequest.size(),
-                listDocuments.size(),
-                countOfPages);
+                documentList,
+                documentEntityPage.getNumber(),
+                documentEntityPage.getSize(),
+                documentEntityPage.getTotalElements(),
+                documentEntityPage.getTotalPages());
         return pageResult;
     }
 
@@ -83,12 +80,23 @@ public class DocumentRepositoryAdapter implements DocumentRepository {
     }
 
     @Override
-    public List<Document> findByProjectId(int projectId) {
-        List<DocumentEntity> documentEntityList = documentJpaRepository.findByProjectId(projectId);
-        List<Document> documentList = documentEntityList.stream()
+    public PageResult<Document> findByProjectId(int projectId, PageRequest pageRequest) {
+        Pageable pageable = org.springframework.data.domain.PageRequest.of(
+                pageRequest.page(),
+                pageRequest.size()
+        );
+        Page<DocumentEntity> documentEntityPage = documentJpaRepository.findByProjectId(projectId, pageable);
+        List<Document> documentList = documentEntityPage.getContent()
+                .stream()
                 .map(DocumentMapper::mapToDocument)
                 .toList();
-        return documentList;
+        PageResult<Document> pageResult = new PageResult<>(
+                documentList,
+                documentEntityPage.getNumber(),
+                documentEntityPage.getSize(),
+                documentEntityPage.getTotalElements(),
+                documentEntityPage.getTotalPages());
+        return pageResult;
     }
 
     @Override

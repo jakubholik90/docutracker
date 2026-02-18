@@ -13,7 +13,7 @@ public interface DocumentRepository {
 
     public Optional<Document> findByDocumentId(int documentId);
 
-    public List<Document> findByProjectId(int projectId);
+    public PageResult<Document> findByProjectId(int projectId, PageRequest pageRequest);
 
     public void deleteByDocumentId(int documentId);
 

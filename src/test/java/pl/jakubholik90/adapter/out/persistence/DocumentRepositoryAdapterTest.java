@@ -8,6 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import pl.jakubholik90.adapter.out.persistence.jpa.DocumentMapper;
 import pl.jakubholik90.domain.common.PageRequest;
@@ -35,13 +39,20 @@ public class DocumentRepositoryAdapterTest {
     private Document savedDocument1; // saved document, with Id!=null
     private Document savedDocument2; // saved document, with Id!=null
 
-//    // sprawdzic czy to jest potrzebne
-//    @Container
-//    static PostgreSQLContainer<?> postgres =
-//            new PostgreSQLContainer<>("postgres:16-alpine")
-//                    .withDatabaseName("testdb")
-//                    .withUsername("test")
-//                    .withPassword("test");
+//   sprawdzic czy to jest potrzebne
+    @Container
+    static PostgreSQLContainer<?> postgres =
+            new PostgreSQLContainer<>("postgres:16-alpine")
+                    .withDatabaseName("testdb")
+                    .withUsername("test")
+                    .withPassword("test");
+
+    @DynamicPropertySource
+    static void configureProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", postgres::getJdbcUrl);
+        registry.add("spring.datasource.username", postgres::getUsername);
+        registry.add("spring.datasource.password", postgres::getPassword);
+    }
 
     @BeforeEach
     public void setUp() {
@@ -101,7 +112,8 @@ public class DocumentRepositoryAdapterTest {
     @Test
     public void shouldFindByProjectId() {
         Integer projectId = savedDocument1.getProjectId();
-        List<Document> listByProjectId = documentRepositoryAdapter.findByProjectId(projectId);
+        PageRequest pageRequest = new PageRequest(0,100);
+        List<Document> listByProjectId = documentRepositoryAdapter.findByProjectId(projectId,pageRequest).content();
         System.out.println("projectId:" + projectId);
         System.out.println("listByProjectId:" + listByProjectId);
         boolean listContainsProjectId1 = listByProjectId.contains(savedDocument1);
@@ -146,8 +158,8 @@ public class DocumentRepositoryAdapterTest {
     @Test
     public void checkDeleteAll() {
         documentRepositoryAdapter.deleteAll();
-        PageRequest pageRequest = new PageRequest(0,documentRepositoryAdapter.count());
-        int size = documentRepositoryAdapter.findAll(pageRequest).size();
+        PageRequest pageRequest = new PageRequest(0,documentRepositoryAdapter.count()+1);
+        int size = documentRepositoryAdapter.findAll(pageRequest).content().size();
         Assertions.assertEquals(0,size);
 
     }

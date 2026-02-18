@@ -6,7 +6,7 @@ public record PageResult<T>(
         List<T> content,
         int page,
         int size,
-        int totalElements,
+        long totalElements,
         int totalPages) {
 
     public boolean hasNext() {

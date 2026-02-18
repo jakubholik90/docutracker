@@ -157,7 +157,9 @@ public class DocumentControllerTest {
         listOfMockedDocuments.add(mockDocument0);
         listOfMockedDocuments.add(mockDocument1);
 
-        when(getDocumentsByProjectIdUseCase.getDocumentsByProjectId(projectId)).thenReturn(listOfMockedDocuments);
+        PageRequest pageRequest = new PageRequest(0,listOfMockedDocuments.size());
+
+        when(getDocumentsByProjectIdUseCase.getDocumentsByProjectId(projectId, pageRequest).content()).thenReturn(listOfMockedDocuments);
 
         mockMvc.perform(get("/api/documents").param("projectId", "1"))
                 .andExpect(status().isOk())
@@ -167,14 +169,14 @@ public class DocumentControllerTest {
                 .andExpect(jsonPath("$[1].projectId").value(projectId))
                 .andExpect(jsonPath("$[1].id").value(greaterThanOrEqualTo(0)));
 
-        verify(getDocumentsByProjectIdUseCase,times(1)).getDocumentsByProjectId(projectId);
+        verify(getDocumentsByProjectIdUseCase,times(1)).getDocumentsByProjectId(projectId,pageRequest);
     }
 
     @Test // testing GetALlDocumentsUseCase
     public void shouldReturn200AndAllDocumentsInPage() throws Exception {
         int page = 1;
         int size = 2;
-        int totalElements = 5;
+        long totalElements = 5;
         int totalPages = 3;
 
         PageRequest pageRequest = new PageRequest(page, size);

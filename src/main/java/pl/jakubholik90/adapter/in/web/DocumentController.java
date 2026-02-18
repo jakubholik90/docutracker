@@ -3,8 +3,11 @@ package pl.jakubholik90.adapter.in.web;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import pl.jakubholik90.adapter.in.web.dto.DocumentPageResponse;
 import pl.jakubholik90.adapter.in.web.dto.DocumentRequest;
 import pl.jakubholik90.adapter.in.web.dto.DocumentResponse;
+import pl.jakubholik90.domain.common.PageRequest;
+import pl.jakubholik90.domain.common.PageResult;
 import pl.jakubholik90.domain.model.Document;
 import pl.jakubholik90.domain.port.in.*;
 
@@ -80,28 +83,74 @@ public class DocumentController {
     }
 
     @GetMapping("api/documents")
-    public ResponseEntity<List<DocumentResponse>> getDocumentsByProjectId(@RequestParam int projectId) {
-        ResponseEntity<List<DocumentResponse>> responseEntity;
+    public ResponseEntity<DocumentPageResponse> getAllDocumentsPaginated(
+            @RequestParam(required = false) Integer projectId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
 
-        List<DocumentResponse> listOfDocuments = new ArrayList<>();
+        ResponseEntity<DocumentPageResponse> responseEntity;
+        PageResult<Document> pageResult;
+        List<Document> listDocuments = new ArrayList<>();
 
-        List<Document> documentsByProjectId = getDocumentsByProjectIdUseCase.getDocumentsByProjectId(projectId);
-
-        for (Document documentByProjectId : documentsByProjectId) {
-            DocumentResponse response = new DocumentResponse(
-                    documentByProjectId.getDocumentId(),
-                    documentByProjectId.getFileName(),
-                    documentByProjectId.getProjectId(),
-                    documentByProjectId.getStatus(),
-                    documentByProjectId.getCurrentRecipient(),
-                    documentByProjectId.getLastStatusChange()
-            );
-            listOfDocuments.add(response);
+        if (projectId != null) {
+            // getDocumentsByProjectUseCase
+            pageResult = getDocumentsByProjectIdUseCase.getDocumentsByProjectId(projectId, new PageRequest(page, size));
+        } else {
+            // getAllDocumentsUseCase
+            pageResult = getAllDocumentsUseCase.getAllDocuments(new PageRequest(page, size));
         }
+
+        listDocuments = pageResult.content();
+        List<DocumentResponse> listDocumentResponses = new ArrayList<>();
+        for (Document document : listDocuments) {
+            DocumentResponse response = new DocumentResponse(
+                    document.getDocumentId(),
+                    document.getFileName(),
+                    document.getProjectId(),
+                    document.getStatus(),
+                    document.getCurrentRecipient(),
+                    document.getLastStatusChange()
+            );
+            listDocumentResponses.add(response);
+        }
+
+        DocumentPageResponse documentPageResponse = new DocumentPageResponse(
+                listDocumentResponses,
+                page,
+                size,
+                listDocuments.size(),
+                (int) Math.ceil((double) listDocuments.size() / size));
+
         responseEntity = ResponseEntity
                 .ok()
-                .body(listOfDocuments);
+                .body(documentPageResponse);
 
         return responseEntity;
     }
+
+//    @GetMapping("api/projects")
+//    public ResponseEntity<List<DocumentResponse>> getAllDocumentsPaginated(@RequestParam int page, @RequestParam int size) {
+//        ResponseEntity<List<DocumentResponse>> responseEntity;
+//
+//        List<DocumentResponse> listOfDocuments = new ArrayList<>();
+//
+//        PageResult<Document> allDocumentsPaginated = getAllDocumentsUseCase.getAllDocuments(new PageRequest(page, size));
+//
+//        for (Document document : allDocumentsPaginated.content()) {
+//            DocumentResponse response = new DocumentResponse(
+//                    document.getDocumentId(),
+//                    document.getFileName(),
+//                    document.getProjectId(),
+//                    document.getStatus(),
+//                    document.getCurrentRecipient(),
+//                    document.getLastStatusChange()
+//            );
+//            listOfDocuments.add(response);
+//        }
+//        responseEntity = ResponseEntity
+//                .ok()
+//                .body(listOfDocuments);
+//
+//        return responseEntity;
+//    }
 }

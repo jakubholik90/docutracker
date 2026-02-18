@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
@@ -113,18 +114,32 @@ public class DocumentServiceTest {
 
     @Test
     public void checkGetDocumentsByProjectId() {
-        Document document0 = Document.builder().documentId(0).projectId(1).build();
-        Document document1 = Document.builder().documentId(1).projectId(2).build();
-        Document document2 = Document.builder().documentId(2).projectId(1).build();
+        int projectId = 1;
+        Document document0 = Document.builder().documentId(0).projectId(projectId).build();
+        Document document1 = Document.builder().documentId(1).projectId(projectId).build();
+        Document document2 = Document.builder().documentId(2).projectId(projectId).build();
         List<Document> listOfDocumentsFromProject1 = new ArrayList<>();
         listOfDocumentsFromProject1.add(document0);
         listOfDocumentsFromProject1.add(document1);
         listOfDocumentsFromProject1.add(document2);
 
-        when(documentRepository.findByProjectId(1)).thenReturn(listOfDocumentsFromProject1);
+        int page = 0;
+        int size = listOfDocumentsFromProject1.size()-1;
 
-        Assertions.assertEquals(listOfDocumentsFromProject1,
-                documentService.getDocumentsByProjectId(1));
+        List<Document> listOfDocumentsFromProject1Paginated = List.of(document0,document1);
+        PageRequest pageRequest = new PageRequest(page,size);
+        PageResult<Document> pageResult = new PageResult<>(
+                listOfDocumentsFromProject1Paginated,
+                page,
+                size,
+                listOfDocumentsFromProject1.size(),
+                (int) Math.ceil((double) listOfDocumentsFromProject1.size() / size));
+        System.out.println("pageResult:" + pageResult);
+
+        when(documentRepository.findByProjectId(projectId,pageRequest)).thenReturn(pageResult);
+
+        Assertions.assertEquals(listOfDocumentsFromProject1Paginated,
+                documentService.getDocumentsByProjectId(projectId,pageRequest).content());
     }
 
 }
