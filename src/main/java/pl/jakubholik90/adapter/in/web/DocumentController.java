@@ -118,8 +118,8 @@ public class DocumentController {
                 listDocumentResponses,
                 page,
                 size,
-                listDocuments.size(),
-                (int) Math.ceil((double) listDocuments.size() / size));
+                pageResult.totalElements(),
+                pageResult.totalPages());
 
         responseEntity = ResponseEntity
                 .ok()

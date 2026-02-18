@@ -6,6 +6,6 @@ public record DocumentPageResponse(
         List<DocumentResponse> content,
         int page,
         int size,
-        int totalElements,
+        long totalElements,
         int totalPages) {
 }

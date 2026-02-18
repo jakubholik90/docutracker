@@ -159,17 +159,28 @@ public class DocumentControllerTest {
 
         PageRequest pageRequest = new PageRequest(0,listOfMockedDocuments.size());
 
-        when(getDocumentsByProjectIdUseCase.getDocumentsByProjectId(projectId, pageRequest).content()).thenReturn(listOfMockedDocuments);
+        PageResult<Document> pageResult = new PageResult<>(
+                listOfMockedDocuments,
+                0,
+                2,
+                2,
+                1);
 
-        mockMvc.perform(get("/api/documents").param("projectId", "1"))
+        when(getDocumentsByProjectIdUseCase.getDocumentsByProjectId(projectId, pageRequest)).thenReturn(pageResult);
+
+        mockMvc.perform(get("/api/documents")
+                        .param("projectId", "1")
+                        .param("page","0")
+                        .param("size",String.valueOf(listOfMockedDocuments.size())))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$",hasSize(2)))
-                .andExpect(jsonPath("$[0].projectId").value(projectId))
-                .andExpect(jsonPath("$[0].id").value(greaterThanOrEqualTo(0)))
-                .andExpect(jsonPath("$[1].projectId").value(projectId))
-                .andExpect(jsonPath("$[1].id").value(greaterThanOrEqualTo(0)));
+                .andExpect(jsonPath("$.content",hasSize(2)))
+                .andExpect(jsonPath("$.content[0].projectId").value(projectId))
+                .andExpect(jsonPath("$.content[0].id").value(greaterThanOrEqualTo(0)))
+                .andExpect(jsonPath("$.content[1].projectId").value(projectId))
+                .andExpect(jsonPath("$.content[1].id").value(greaterThanOrEqualTo(0)));
 
         verify(getDocumentsByProjectIdUseCase,times(1)).getDocumentsByProjectId(projectId,pageRequest);
+        verify(getAllDocumentsUseCase,never()).getAllDocuments(pageRequest);
     }
 
     @Test // testing GetALlDocumentsUseCase
@@ -215,6 +226,7 @@ public class DocumentControllerTest {
                 .andExpect(jsonPath("$.content",hasSize(content.size())));
 
         verify(getAllDocumentsUseCase,times(1)).getAllDocuments(pageRequest);
+        verify(getDocumentByIdUseCase,never()).getDocumentById(anyInt());
     }
 
 
