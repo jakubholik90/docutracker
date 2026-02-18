@@ -3,19 +3,23 @@ package pl.jakubholik90.adapter.out.persistence;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import pl.jakubholik90.adapter.out.persistence.jpa.DocumentMapper;
+import pl.jakubholik90.domain.common.PageRequest;
+import pl.jakubholik90.domain.common.PageResult;
 import pl.jakubholik90.domain.model.Document;
 import pl.jakubholik90.domain.model.DocumentStatus;
 import pl.jakubholik90.domain.model.RecipientType;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -35,13 +39,19 @@ public class DocumentRepositoryAdapterTest {
     private Document savedDocument1; // saved document, with Id!=null
     private Document savedDocument2; // saved document, with Id!=null
 
-//    // sprawdzic czy to jest potrzebne
-//    @Container
-//    static PostgreSQLContainer<?> postgres =
-//            new PostgreSQLContainer<>("postgres:16-alpine")
-//                    .withDatabaseName("testdb")
-//                    .withUsername("test")
-//                    .withPassword("test");
+    @Container
+    static PostgreSQLContainer<?> postgres =
+            new PostgreSQLContainer<>("postgres:16-alpine")
+                    .withDatabaseName("testdb")
+                    .withUsername("test")
+                    .withPassword("test");
+
+    @DynamicPropertySource
+    static void configureProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", postgres::getJdbcUrl);
+        registry.add("spring.datasource.username", postgres::getUsername);
+        registry.add("spring.datasource.password", postgres::getPassword);
+    }
 
     @BeforeEach
     public void setUp() {
@@ -87,7 +97,8 @@ public class DocumentRepositoryAdapterTest {
 
     @Test
     public void shouldReturnEmptyWhenNotFound() {
-        List<Document> listDocuments = documentRepositoryAdapter.findAll();
+        PageRequest pageRequest = new PageRequest(0,documentRepositoryAdapter.count());
+        List<Document> listDocuments = documentRepositoryAdapter.findAll(pageRequest).content();
         List<Integer> listOfIds = listDocuments.stream()
                 .map(Document::getDocumentId)
                 .toList();
@@ -100,7 +111,8 @@ public class DocumentRepositoryAdapterTest {
     @Test
     public void shouldFindByProjectId() {
         Integer projectId = savedDocument1.getProjectId();
-        List<Document> listByProjectId = documentRepositoryAdapter.findByProjectId(projectId);
+        PageRequest pageRequest = new PageRequest(0,100);
+        List<Document> listByProjectId = documentRepositoryAdapter.findByProjectId(projectId,pageRequest).content();
         System.out.println("projectId:" + projectId);
         System.out.println("listByProjectId:" + listByProjectId);
         boolean listContainsProjectId1 = listByProjectId.contains(savedDocument1);
@@ -117,21 +129,43 @@ public class DocumentRepositoryAdapterTest {
 
     @Test
     public void checkFindAll() {
-        List<Document> allFoundDocuments = documentRepositoryAdapter.findAll();
-        List<Document> assertionList = new ArrayList<>();
-        assertionList.add(savedDocument1);
-        assertionList.add(savedDocument2);
-        System.out.println("allFoundDocuments: " + allFoundDocuments);
-        System.out.println("assertionList: " + assertionList);
-        Assertions.assertEquals(assertionList, allFoundDocuments);
+        //given
+        int totalNumberOfElements = 25;
+        int pageNumber = 0;
+        int pageSize = 10;
+        int numberOfPages = (int) Math.ceil((double) totalNumberOfElements / pageSize);
+
+        PageRequest pageRequest = new PageRequest(pageNumber,pageSize);
+
+        documentRepositoryAdapter.deleteAll();
+        for (int i = 0; i < totalNumberOfElements; i++) {
+            documentRepositoryAdapter.save(document1);
+        }
+
+        //when
+        PageResult<Document> pageResult = documentRepositoryAdapter.findAll(pageRequest);
+
+        //then
+        Assertions.assertEquals(pageSize,pageResult.content().size());
+        Assertions.assertEquals(pageNumber,pageResult.page());
+        Assertions.assertEquals(pageSize,pageResult.size());
+        Assertions.assertEquals(totalNumberOfElements,pageResult.totalElements());
+        Assertions.assertEquals(numberOfPages,pageResult.totalPages());
+
     }
 
     @Test
     public void checkDeleteAll() {
         documentRepositoryAdapter.deleteAll();
-        int size = documentRepositoryAdapter.findAll().size();
+        PageRequest pageRequest = new PageRequest(0,documentRepositoryAdapter.count()+1);
+        int size = documentRepositoryAdapter.findAll(pageRequest).content().size();
         Assertions.assertEquals(0,size);
 
+    }
+
+    @Test
+    public void checkCount() {
+        Assertions.assertEquals(2,documentRepositoryAdapter.count());
     }
 
 

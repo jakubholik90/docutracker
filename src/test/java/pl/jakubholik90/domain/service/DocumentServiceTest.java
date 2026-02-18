@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import pl.jakubholik90.domain.common.PageRequest;
+import pl.jakubholik90.domain.common.PageResult;
 import pl.jakubholik90.domain.model.Document;
 import pl.jakubholik90.domain.model.DocumentStatus;
 import pl.jakubholik90.domain.model.RecipientType;
@@ -13,8 +15,12 @@ import pl.jakubholik90.infrastructure.exception.DocumentException;
 import pl.jakubholik90.infrastructure.exception.ProjectException;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
@@ -39,7 +45,7 @@ public class DocumentServiceTest {
                             .lastStatusChange(saved.getLastStatusChange())
                             .build();
                 });
-        }
+    }
 
     @Test
     public void shouldCreateDocument() {
@@ -75,6 +81,65 @@ public class DocumentServiceTest {
     public void shouldThrowExceptionWhenProjectIdIsNull() {
         CreateDocumentDTO createDocumentDTO = new CreateDocumentDTO("test.pdf", null, RecipientType.SUBCONTRACTOR);
         Assertions.assertThrows(ProjectException.class,() -> documentService.createDocument(createDocumentDTO));
+    }
+
+    @Test
+    public void checkGetAllDocuments() {
+        Document document0 = Document.builder().documentId(0).projectId(1).build();
+        Document document1 = Document.builder().documentId(1).projectId(2).build();
+        Document document2 = Document.builder().documentId(2).projectId(1).build();
+        List<Document> listOfAllDocuments = new ArrayList<>();
+        listOfAllDocuments.add(document0);
+        listOfAllDocuments.add(document1);
+        listOfAllDocuments.add(document2);
+        when(documentRepository.findAll(any())).thenReturn(new PageResult<Document>(
+                listOfAllDocuments,
+                0,
+                10,
+                listOfAllDocuments.size(),
+                1));
+        Assertions.assertEquals(listOfAllDocuments,documentService.getAllDocuments(new PageRequest(0,10)).content());
+    }
+
+    @Test
+    public void checkGetDocumentById() {
+        when(documentRepository.findByDocumentId(1)).thenReturn(
+                Optional.of(
+                        Document.builder()
+                                .documentId(1)
+                                .build())
+        );
+    Assertions.assertEquals(1,documentService.getDocumentById(1).get().getDocumentId());
+    }
+
+    @Test
+    public void checkGetDocumentsByProjectId() {
+        int projectId = 1;
+        Document document0 = Document.builder().documentId(0).projectId(projectId).build();
+        Document document1 = Document.builder().documentId(1).projectId(projectId).build();
+        Document document2 = Document.builder().documentId(2).projectId(projectId).build();
+        List<Document> listOfDocumentsFromProject1 = new ArrayList<>();
+        listOfDocumentsFromProject1.add(document0);
+        listOfDocumentsFromProject1.add(document1);
+        listOfDocumentsFromProject1.add(document2);
+
+        int page = 0;
+        int size = listOfDocumentsFromProject1.size()-1;
+
+        List<Document> listOfDocumentsFromProject1Paginated = List.of(document0,document1);
+        PageRequest pageRequest = new PageRequest(page,size);
+        PageResult<Document> pageResult = new PageResult<>(
+                listOfDocumentsFromProject1Paginated,
+                page,
+                size,
+                listOfDocumentsFromProject1.size(),
+                (int) Math.ceil((double) listOfDocumentsFromProject1.size() / size));
+        System.out.println("pageResult:" + pageResult);
+
+        when(documentRepository.findByProjectId(projectId,pageRequest)).thenReturn(pageResult);
+
+        Assertions.assertEquals(listOfDocumentsFromProject1Paginated,
+                documentService.getDocumentsByProjectId(projectId,pageRequest).content());
     }
 
 }
