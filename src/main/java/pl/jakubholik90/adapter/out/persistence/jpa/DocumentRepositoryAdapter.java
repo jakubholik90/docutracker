@@ -1,19 +1,14 @@
-package pl.jakubholik90.adapter.out.persistence;
+package pl.jakubholik90.adapter.out.persistence.jpa;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
-import pl.jakubholik90.Main;
-import pl.jakubholik90.adapter.out.persistence.jpa.DocumentJpaRepository;
-import pl.jakubholik90.adapter.out.persistence.jpa.DocumentMapper;
 import pl.jakubholik90.adapter.out.persistence.jpa.entity.DocumentEntity;
 import pl.jakubholik90.domain.common.PageRequest;
 import pl.jakubholik90.domain.common.PageResult;
 import pl.jakubholik90.domain.model.Document;
 import pl.jakubholik90.domain.port.out.DocumentRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 

@@ -21,7 +21,7 @@ public class StatusChangeEvent {
     private final String reason;
 
     // only getters
-    public long getId() {
+    public Long getId() {
         return id;
     }
 

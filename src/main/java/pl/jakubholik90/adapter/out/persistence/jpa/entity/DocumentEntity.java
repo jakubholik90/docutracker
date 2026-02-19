@@ -3,6 +3,9 @@ import jakarta.persistence.*;
 import pl.jakubholik90.domain.model.DocumentStatus;
 import pl.jakubholik90.domain.model.RecipientType;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "documents") //table definition
 public class DocumentEntity {
@@ -28,6 +31,11 @@ public class DocumentEntity {
 
     @Column(name = "last_status_change", nullable = false)
     private LocalDateTime lastStatusChange;
+
+    @OneToMany(mappedBy = "document", cascade = CascadeType.ALL, orphanRemoval = true)
+    // cascade - automatic save in history by modifying document
+    // orphanremoval - deleting of history available
+    private List<StatusChangeEventEntity> history = new ArrayList<>();
 
     // constructors
     public DocumentEntity() {
