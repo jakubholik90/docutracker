@@ -40,13 +40,14 @@ public class DocumentEntity {
     // constructors
     public DocumentEntity() {
     }
-    public DocumentEntity(Integer documentId, String fileName, Integer projectId, DocumentStatus status, RecipientType currentRecipient, LocalDateTime lastStatusChange) {
+    public DocumentEntity(Integer documentId, String fileName, Integer projectId, DocumentStatus status, RecipientType currentRecipient, LocalDateTime lastStatusChange, List<StatusChangeEventEntity> history) {
         this.documentId = documentId;
         this.fileName = fileName;
         this.projectId = projectId;
         this.status = status;
         this.currentRecipient = currentRecipient;
         this.lastStatusChange = lastStatusChange;
+        this.history = history;
     }
 
     // getters
@@ -68,6 +69,9 @@ public class DocumentEntity {
     public LocalDateTime getLastStatusChange() {
         return lastStatusChange;
     }
+    public List<StatusChangeEventEntity> getHistory() {
+        return history;
+    }
 
     // setters
     public void setDocumentId(Integer documentId) {
@@ -87,5 +91,8 @@ public class DocumentEntity {
     }
     public void setLastStatusChange(LocalDateTime lastStatusChange) {
         this.lastStatusChange = lastStatusChange;
+    }
+    public void setHistory(List<StatusChangeEventEntity> history) {
+        this.history = history;
     }
 }

@@ -42,7 +42,7 @@ public class StatusChangeEventMapper {
                 .fromStatus(statusChangeEventEntity.getFromStatus())
                 .toStatus(statusChangeEventEntity.getToStatus())
                 .fromRecipient(statusChangeEventEntity.getFromRecipient())
-                .toRecipient(statusChangeEventEntity.getFromRecipient())
+                .toRecipient(statusChangeEventEntity.getToRecipient())
                 .changedBy(statusChangeEventEntity.getChangedBy())
                 .reason(statusChangeEventEntity.getReason())
                 .build();
