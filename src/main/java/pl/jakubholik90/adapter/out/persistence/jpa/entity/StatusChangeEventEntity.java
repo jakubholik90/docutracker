@@ -16,7 +16,6 @@ public class StatusChangeEventEntity {
     @Column(name = "id")
     Long id;
 
-    @Column(name = "document")
     @ManyToOne
     @JoinColumn(name = "document_id", nullable = false)
     DocumentEntity document;

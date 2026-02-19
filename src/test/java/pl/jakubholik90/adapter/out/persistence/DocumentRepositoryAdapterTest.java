@@ -19,7 +19,10 @@ import pl.jakubholik90.domain.common.PageResult;
 import pl.jakubholik90.domain.model.Document;
 import pl.jakubholik90.domain.model.DocumentStatus;
 import pl.jakubholik90.domain.model.RecipientType;
+import pl.jakubholik90.domain.model.StatusChangeEvent;
+
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -86,6 +89,48 @@ public class DocumentRepositoryAdapterTest {
         boolean b = documentRepositoryAdapter.ifExistsByDocumentId(savedDocument1.getDocumentId());
         System.out.println("test shouldSaveDocument(), savedDocument1.getDocumentId(): " + savedDocument1.getDocumentId());
         Assertions.assertTrue(b);
+    }
+
+    @Test
+    public void shouldSaveDocumentWithHistory() {
+        //given
+        StatusChangeEvent event0 = StatusChangeEvent.builder()
+                .timestamp(LocalDateTime.now())
+                .fromStatus(DocumentStatus.AT_USER)
+                .toStatus(DocumentStatus.AT_SUBCONTRACTOR)
+                .fromRecipient(RecipientType.INTERNAL_REVIEWER)
+                .toRecipient(RecipientType.SUBCONTRACTOR)
+                .changedBy("admin")
+                .reason("issue")
+                .build();
+        StatusChangeEvent event1 = StatusChangeEvent.builder()
+                .timestamp(LocalDateTime.now())
+                .fromStatus(DocumentStatus.AT_USER)
+                .toStatus(DocumentStatus.AT_SUBCONTRACTOR)
+                .fromRecipient(RecipientType.INTERNAL_REVIEWER)
+                .toRecipient(RecipientType.SUBCONTRACTOR)
+                .changedBy("admin")
+                .reason("reissue")
+                .build();
+        document1.addStatusChangeEvent(event0);
+        document1.addStatusChangeEvent(event1);
+        // when
+        documentRepositoryAdapter.deleteAll();
+        Document savedDocument1WithHistory = documentRepositoryAdapter.save(document1);
+        // then
+        Assertions.assertEquals(2,savedDocument1WithHistory.getHistory().size());
+
+        Long idSavedEvent0 = savedDocument1WithHistory.getHistory().get(0).getId();
+        Assertions.assertTrue(idSavedEvent0!=null && idSavedEvent0>0);
+        Assertions.assertEquals(DocumentStatus.AT_USER,savedDocument1WithHistory.getHistory().get(0).getFromStatus());
+        Assertions.assertEquals(DocumentStatus.AT_SUBCONTRACTOR,savedDocument1WithHistory.getHistory().get(0).getToStatus());
+        Assertions.assertEquals(RecipientType.INTERNAL_REVIEWER,savedDocument1WithHistory.getHistory().get(0).getFromRecipient());
+        Assertions.assertEquals(RecipientType.SUBCONTRACTOR,savedDocument1WithHistory.getHistory().get(0).getToRecipient());
+        Assertions.assertEquals("admin",savedDocument1WithHistory.getHistory().get(0).getChangedBy());
+        Assertions.assertEquals("issue",savedDocument1WithHistory.getHistory().get(0).getReason());
+
+        Long idSavedEvent1 = savedDocument1WithHistory.getHistory().get(1).getId();
+        Assertions.assertTrue(idSavedEvent1!=null && idSavedEvent1>0 && idSavedEvent1>idSavedEvent0);
     }
 
     @Test

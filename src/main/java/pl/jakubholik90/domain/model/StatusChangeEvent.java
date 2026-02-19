@@ -53,10 +53,6 @@ public class StatusChangeEvent {
         return reason;
     }
 
-    public String getComment() {
-        return reason;
-    }
-
     //hash and equals override
     @Override
     public boolean equals(Object o) {
@@ -67,5 +63,12 @@ public class StatusChangeEvent {
     @Override
     public int hashCode() {
         return Objects.hashCode(getId());
+    }
+
+    @Override // override toString() for comparing
+    public String toString() {
+        return "StatusChangeEvent{" +
+                "id=" + id +
+                '}';
     }
 }
