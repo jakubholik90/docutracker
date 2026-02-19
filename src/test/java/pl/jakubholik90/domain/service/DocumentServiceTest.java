@@ -9,6 +9,8 @@ import pl.jakubholik90.domain.common.PageResult;
 import pl.jakubholik90.domain.model.Document;
 import pl.jakubholik90.domain.model.DocumentStatus;
 import pl.jakubholik90.domain.model.RecipientType;
+import pl.jakubholik90.domain.model.StatusChangeEvent;
+import pl.jakubholik90.domain.port.in.ChangeDocumentStatusDTO;
 import pl.jakubholik90.domain.port.in.CreateDocumentDTO;
 import pl.jakubholik90.domain.port.out.DocumentRepository;
 import pl.jakubholik90.infrastructure.exception.DocumentException;
@@ -140,6 +142,38 @@ public class DocumentServiceTest {
 
         Assertions.assertEquals(listOfDocumentsFromProject1Paginated,
                 documentService.getDocumentsByProjectId(projectId,pageRequest).content());
+    }
+
+    @Test
+    public void shouldChangeDocumentStatus() {
+        //given
+        PageResult<Document> pageResult = documentService.getAllDocuments(new PageRequest(0, 10));
+        Document document = pageResult.content().getFirst();
+        Integer documentId = document.getDocumentId();
+        Document previousStateDocument = documentService.getDocumentById(documentId).get();
+        int documentHistorySize = previousStateDocument
+                .getHistory()
+                .size();
+
+        ChangeDocumentStatusDTO changeStatusDTO = new ChangeDocumentStatusDTO(
+                documentId,
+                DocumentStatus.AT_USER,
+                RecipientType.USER,
+                "setup");
+        //when
+        Document updatedDocument = documentService.changeDocumentStatus(changeStatusDTO);
+        //then
+        StatusChangeEvent last = updatedDocument.getHistory().getLast();
+        Assertions.assertTrue(updatedDocument.getHistory().size()>documentHistorySize);
+
+        Assertions.assertTrue(last.getId()!=null);
+        Assertions.assertTrue(last.getTimestamp()!=null);
+        Assertions.assertEquals(previousStateDocument.getStatus(),last.getFromStatus());
+        Assertions.assertEquals(DocumentStatus.AT_USER, last.getToStatus());
+        Assertions.assertEquals(previousStateDocument.getCurrentRecipient(),last.getFromRecipient());
+        Assertions.assertEquals(RecipientType.USER, last.getToRecipient());
+        Assertions.assertEquals("???",last.getChangedBy()); //tu brakuje pola?
+        Assertions.assertEquals("setup", last.getReason());
     }
 
 }
