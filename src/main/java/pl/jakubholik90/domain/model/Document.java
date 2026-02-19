@@ -5,6 +5,8 @@ import pl.jakubholik90.infrastructure.exception.DocumentException;
 import pl.jakubholik90.infrastructure.exception.ProjectException;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -16,6 +18,9 @@ public class Document {
     private DocumentStatus status;
     private RecipientType currentRecipient;
     private LocalDateTime lastStatusChange;
+
+    @Builder.Default
+    private List<StatusChangeEvent> history = new ArrayList<>();
 
     // getters only, no setters
     public String getFileName() {
@@ -40,6 +45,14 @@ public class Document {
 
     public RecipientType getCurrentRecipient() {
         return currentRecipient;
+    }
+
+    public List<StatusChangeEvent> getHistory() {
+        return history;
+    }
+
+    public void addStatusChangeEvent(StatusChangeEvent event) {
+        this.history.add(event);
     }
 
     @Override
