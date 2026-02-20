@@ -45,6 +45,7 @@ public class DocumentServiceTest {
                             .status(saved.getStatus())
                             .currentRecipient(saved.getCurrentRecipient())
                             .lastStatusChange(saved.getLastStatusChange())
+                            .history(saved.getHistory())
                             .build();
                 });
     }
@@ -147,11 +148,19 @@ public class DocumentServiceTest {
     @Test
     public void shouldChangeDocumentStatus() {
         //given
-        PageResult<Document> pageResult = documentService.getAllDocuments(new PageRequest(0, 10));
-        Document document = pageResult.content().getFirst();
-        Integer documentId = document.getDocumentId();
-        Document previousStateDocument = documentService.getDocumentById(documentId).get();
-        int documentHistorySize = previousStateDocument
+        Document oldDocument = Document.builder()
+                .documentId(1)
+                .fileName("test.pdf")
+                .projectId(10)
+                .status(DocumentStatus.DRAFT)
+                .currentRecipient(RecipientType.USER)
+                .lastStatusChange(LocalDateTime.of(2000, 12, 31, 12, 59, 00))
+                .history(new ArrayList<>())
+                .build();
+
+        Integer documentId = oldDocument.getDocumentId();
+
+        int documentHistorySize = oldDocument
                 .getHistory()
                 .size();
 
@@ -160,6 +169,7 @@ public class DocumentServiceTest {
                 DocumentStatus.AT_USER,
                 RecipientType.USER,
                 "setup");
+        when(documentRepository.findByDocumentId(documentId)).thenReturn(Optional.of(oldDocument));
         //when
         Document updatedDocument = documentService.changeDocumentStatus(changeStatusDTO);
         //then
@@ -168,9 +178,9 @@ public class DocumentServiceTest {
 
         Assertions.assertTrue(last.getId()!=null);
         Assertions.assertTrue(last.getTimestamp()!=null);
-        Assertions.assertEquals(previousStateDocument.getStatus(),last.getFromStatus());
+        Assertions.assertEquals(oldDocument.getStatus(),last.getFromStatus());
         Assertions.assertEquals(DocumentStatus.AT_USER, last.getToStatus());
-        Assertions.assertEquals(previousStateDocument.getCurrentRecipient(),last.getFromRecipient());
+        Assertions.assertEquals(oldDocument.getCurrentRecipient(),last.getFromRecipient());
         Assertions.assertEquals(RecipientType.USER, last.getToRecipient());
         Assertions.assertEquals("???",last.getChangedBy()); //tu brakuje pola?
         Assertions.assertEquals("setup", last.getReason());
