@@ -1,5 +1,6 @@
 package pl.jakubholik90.domain.service;
 
+import lombok.Builder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,6 +10,8 @@ import pl.jakubholik90.domain.common.PageResult;
 import pl.jakubholik90.domain.model.Document;
 import pl.jakubholik90.domain.model.DocumentStatus;
 import pl.jakubholik90.domain.model.RecipientType;
+import pl.jakubholik90.domain.model.StatusChangeEvent;
+import pl.jakubholik90.domain.port.in.ChangeDocumentStatusDTO;
 import pl.jakubholik90.domain.port.in.CreateDocumentDTO;
 import pl.jakubholik90.domain.port.out.DocumentRepository;
 import pl.jakubholik90.infrastructure.exception.DocumentException;
@@ -43,6 +46,7 @@ public class DocumentServiceTest {
                             .status(saved.getStatus())
                             .currentRecipient(saved.getCurrentRecipient())
                             .lastStatusChange(saved.getLastStatusChange())
+                            .history(saved.getHistory())
                             .build();
                 });
     }
@@ -140,6 +144,76 @@ public class DocumentServiceTest {
 
         Assertions.assertEquals(listOfDocumentsFromProject1Paginated,
                 documentService.getDocumentsByProjectId(projectId,pageRequest).content());
+    }
+
+    @Test
+    public void shouldChangeDocumentStatus() {
+        //given
+        StatusChangeEvent firstEvent = StatusChangeEvent.builder()
+                .timestamp(LocalDateTime.of(1995, 12, 31, 12, 59, 00))
+                .fromStatus(DocumentStatus.AT_SUBCONTRACTOR)
+                .toStatus(DocumentStatus.AT_USER)
+                .fromRecipient(RecipientType.SUBCONTRACTOR)
+                .toRecipient(RecipientType.USER)
+                .changedBy("SYSTEM")
+                .reason("test")
+                .build();
+
+        ArrayList<StatusChangeEvent> history = new ArrayList<>();
+        history.add(firstEvent);
+
+        Document oldDocument = Document.builder()
+                .documentId(1)
+                .fileName("test.pdf")
+                .projectId(10)
+                .status(DocumentStatus.DRAFT)
+                .currentRecipient(RecipientType.USER)
+                .lastStatusChange(LocalDateTime.of(2000, 12, 31, 12, 59, 00))
+                .history(history )
+                .build();
+
+        Integer documentId = oldDocument.getDocumentId();
+
+        int documentHistorySize = oldDocument
+                .getHistory()
+                .size();
+
+        ChangeDocumentStatusDTO changeStatusDTO = new ChangeDocumentStatusDTO(
+                documentId,
+                DocumentStatus.AT_USER,
+                RecipientType.USER,
+                "setup");
+        when(documentRepository.findByDocumentId(documentId)).thenReturn(Optional.of(oldDocument));
+
+        DocumentStatus oldStatus = oldDocument.getStatus();
+        RecipientType oldRecipient = oldDocument.getCurrentRecipient();
+        //when
+        Document updatedDocument = documentService.changeDocumentStatus(changeStatusDTO);
+        //then
+        StatusChangeEvent last = updatedDocument.getHistory().getLast();
+        Assertions.assertTrue(updatedDocument.getHistory().size()>documentHistorySize);
+        // Assertions.assertTrue(last.getId()!=null);  not checked, ID != null only after using real JPA (outside of tests)
+        Assertions.assertTrue(last.getTimestamp()!=null);
+        Assertions.assertEquals(oldStatus,last.getFromStatus());
+        Assertions.assertEquals(DocumentStatus.AT_USER, last.getToStatus());
+        Assertions.assertEquals(oldRecipient,last.getFromRecipient());
+        Assertions.assertEquals(RecipientType.USER, last.getToRecipient());
+        Assertions.assertEquals("SYSTEM",last.getChangedBy()); //test hardcoded, field is missing
+        Assertions.assertEquals("setup", last.getReason());
+    }
+
+    @Test
+    public void shouldThrowExceptionWhenDocumentNotFound() {
+        //given
+        Integer documentId = 1;
+        when(documentRepository.findByDocumentId(documentId)).thenReturn(Optional.empty());
+        ChangeDocumentStatusDTO changeStatusDTO = new ChangeDocumentStatusDTO(
+                documentId,
+                DocumentStatus.AT_USER,
+                RecipientType.USER,
+                "setup");
+        //when+then
+        Assertions.assertThrows(DocumentException.class,() -> documentService.changeDocumentStatus(changeStatusDTO));
     }
 
 }

@@ -5,6 +5,8 @@ import pl.jakubholik90.infrastructure.exception.DocumentException;
 import pl.jakubholik90.infrastructure.exception.ProjectException;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -17,7 +19,10 @@ public class Document {
     private RecipientType currentRecipient;
     private LocalDateTime lastStatusChange;
 
-    // getters only, no setters
+    @Builder.Default
+    private List<StatusChangeEvent> history = new ArrayList<>();
+
+    // getters
     public String getFileName() {
         return fileName;
     }
@@ -40,6 +45,30 @@ public class Document {
 
     public RecipientType getCurrentRecipient() {
         return currentRecipient;
+    }
+
+    public List<StatusChangeEvent> getHistory() {
+        return history;
+    }
+
+    public void addStatusChangeEvent(StatusChangeEvent event) {
+        this.history.add(event);
+    }
+
+
+    // setters for mutable fields only
+
+
+    public void setStatus(DocumentStatus status) {
+        this.status = status;
+    }
+
+    public void setCurrentRecipient(RecipientType currentRecipient) {
+        this.currentRecipient = currentRecipient;
+    }
+
+    public void setLastStatusChange(LocalDateTime lastStatusChange) {
+        this.lastStatusChange = lastStatusChange;
     }
 
     @Override

@@ -5,4 +5,5 @@ public enum RecipientType {
     INTERNAL_REVIEWER,
     EXTERNAL_REVIEWER,
     CLIENT,
+    USER,
 }
