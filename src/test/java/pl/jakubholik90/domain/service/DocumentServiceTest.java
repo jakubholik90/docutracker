@@ -202,4 +202,18 @@ public class DocumentServiceTest {
         Assertions.assertEquals("setup", last.getReason());
     }
 
+    @Test
+    public void shouldThrowExceptionWhenDocumentNotFound() {
+        //given
+        Integer documentId = 1;
+        when(documentRepository.findByDocumentId(documentId)).thenReturn(Optional.empty());
+        ChangeDocumentStatusDTO changeStatusDTO = new ChangeDocumentStatusDTO(
+                documentId,
+                DocumentStatus.AT_USER,
+                RecipientType.USER,
+                "setup");
+        //when+then
+        Assertions.assertThrows(DocumentException.class,() -> documentService.changeDocumentStatus(changeStatusDTO));
+    }
+
 }
