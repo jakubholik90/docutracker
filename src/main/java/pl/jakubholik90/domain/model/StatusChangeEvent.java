@@ -9,10 +9,7 @@ import java.util.Objects;
 public class StatusChangeEvent {
 
     private final Long id;
-
-    @Builder.Default
-    private final LocalDateTime timestamp = LocalDateTime.now();
-
+    private final LocalDateTime timestamp;
     private final DocumentStatus fromStatus;
     private final DocumentStatus toStatus;
     private final RecipientType fromRecipient;
@@ -65,10 +62,17 @@ public class StatusChangeEvent {
         return Objects.hashCode(getId());
     }
 
-    @Override // override toString() for comparing
+    @Override
     public String toString() {
         return "StatusChangeEvent{" +
                 "id=" + id +
+                ", timestamp=" + timestamp +
+                ", fromStatus=" + fromStatus +
+                ", toStatus=" + toStatus +
+                ", fromRecipient=" + fromRecipient +
+                ", toRecipient=" + toRecipient +
+                ", changedBy='" + changedBy + '\'' +
+                ", reason='" + reason + '\'' +
                 '}';
     }
 }

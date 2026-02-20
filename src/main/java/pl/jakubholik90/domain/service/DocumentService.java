@@ -1,9 +1,12 @@
 package pl.jakubholik90.domain.service;
 
+import lombok.Builder;
 import pl.jakubholik90.domain.common.PageRequest;
 import pl.jakubholik90.domain.common.PageResult;
 import pl.jakubholik90.domain.model.Document;
 import pl.jakubholik90.domain.model.DocumentStatus;
+import pl.jakubholik90.domain.model.RecipientType;
+import pl.jakubholik90.domain.model.StatusChangeEvent;
 import pl.jakubholik90.domain.port.in.*;
 import pl.jakubholik90.domain.port.out.DocumentRepository;
 import pl.jakubholik90.infrastructure.exception.DocumentException;
@@ -65,6 +68,32 @@ public class DocumentService implements CreateDocumentUseCase,
 
     @Override
     public Document changeDocumentStatus(ChangeDocumentStatusDTO changeDocumentStatusDTO) {
-        return null;
+
+        Optional<Document> byDocumentId = documentRepository.findByDocumentId(changeDocumentStatusDTO.documentId());
+
+        if(byDocumentId.isEmpty()) {
+            throw new DocumentException("Document with id:" + changeDocumentStatusDTO.documentId() + " not found");
+        } else {
+            Document document = byDocumentId.get();
+
+            StatusChangeEvent newEvent = StatusChangeEvent.builder()
+                    .timestamp(LocalDateTime.now())
+                    .fromStatus(document.getStatus())
+                    .toStatus(changeDocumentStatusDTO.newStatus())
+                    .fromRecipient(document.getCurrentRecipient())
+                    .toRecipient(changeDocumentStatusDTO.newRecipient())
+                    .changedBy("SYSTEM") //PLACEHOLDER FOR USERNAME!
+                    .reason(changeDocumentStatusDTO.reason())
+                    .build();
+
+            document.addStatusChangeEvent(newEvent);
+            document.setStatus(changeDocumentStatusDTO.newStatus());
+            document.setCurrentRecipient(changeDocumentStatusDTO.newRecipient());
+            document.setLastStatusChange(LocalDateTime.now());
+
+            Document returnDocument = documentRepository.save(document);
+
+            return returnDocument;
+        }
     }
 }

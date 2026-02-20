@@ -22,7 +22,7 @@ public class Document {
     @Builder.Default
     private List<StatusChangeEvent> history = new ArrayList<>();
 
-    // getters only, no setters
+    // getters
     public String getFileName() {
         return fileName;
     }
@@ -53,6 +53,22 @@ public class Document {
 
     public void addStatusChangeEvent(StatusChangeEvent event) {
         this.history.add(event);
+    }
+
+
+    // setters for mutable fields only
+
+
+    public void setStatus(DocumentStatus status) {
+        this.status = status;
+    }
+
+    public void setCurrentRecipient(RecipientType currentRecipient) {
+        this.currentRecipient = currentRecipient;
+    }
+
+    public void setLastStatusChange(LocalDateTime lastStatusChange) {
+        this.lastStatusChange = lastStatusChange;
     }
 
     @Override

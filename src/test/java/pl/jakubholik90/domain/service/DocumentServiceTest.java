@@ -1,5 +1,6 @@
 package pl.jakubholik90.domain.service;
 
+import lombok.Builder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -148,6 +149,19 @@ public class DocumentServiceTest {
     @Test
     public void shouldChangeDocumentStatus() {
         //given
+        StatusChangeEvent firstEvent = StatusChangeEvent.builder()
+                .timestamp(LocalDateTime.of(1995, 12, 31, 12, 59, 00))
+                .fromStatus(DocumentStatus.AT_SUBCONTRACTOR)
+                .toStatus(DocumentStatus.AT_USER)
+                .fromRecipient(RecipientType.SUBCONTRACTOR)
+                .toRecipient(RecipientType.USER)
+                .changedBy("SYSTEM")
+                .reason("test")
+                .build();
+
+        ArrayList<StatusChangeEvent> history = new ArrayList<>();
+        history.add(firstEvent);
+
         Document oldDocument = Document.builder()
                 .documentId(1)
                 .fileName("test.pdf")
@@ -155,7 +169,7 @@ public class DocumentServiceTest {
                 .status(DocumentStatus.DRAFT)
                 .currentRecipient(RecipientType.USER)
                 .lastStatusChange(LocalDateTime.of(2000, 12, 31, 12, 59, 00))
-                .history(new ArrayList<>())
+                .history(history )
                 .build();
 
         Integer documentId = oldDocument.getDocumentId();
@@ -170,19 +184,21 @@ public class DocumentServiceTest {
                 RecipientType.USER,
                 "setup");
         when(documentRepository.findByDocumentId(documentId)).thenReturn(Optional.of(oldDocument));
+
+        DocumentStatus oldStatus = oldDocument.getStatus();
+        RecipientType oldRecipient = oldDocument.getCurrentRecipient();
         //when
         Document updatedDocument = documentService.changeDocumentStatus(changeStatusDTO);
         //then
         StatusChangeEvent last = updatedDocument.getHistory().getLast();
         Assertions.assertTrue(updatedDocument.getHistory().size()>documentHistorySize);
-
-        Assertions.assertTrue(last.getId()!=null);
+        // Assertions.assertTrue(last.getId()!=null);  not checked, ID != null only after using real JPA (outside of tests)
         Assertions.assertTrue(last.getTimestamp()!=null);
-        Assertions.assertEquals(oldDocument.getStatus(),last.getFromStatus());
+        Assertions.assertEquals(oldStatus,last.getFromStatus());
         Assertions.assertEquals(DocumentStatus.AT_USER, last.getToStatus());
-        Assertions.assertEquals(oldDocument.getCurrentRecipient(),last.getFromRecipient());
+        Assertions.assertEquals(oldRecipient,last.getFromRecipient());
         Assertions.assertEquals(RecipientType.USER, last.getToRecipient());
-        Assertions.assertEquals("???",last.getChangedBy()); //tu brakuje pola?
+        Assertions.assertEquals("SYSTEM",last.getChangedBy()); //test hardcoded, field is missing
         Assertions.assertEquals("setup", last.getReason());
     }
 
