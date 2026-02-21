@@ -16,6 +16,7 @@ import pl.jakubholik90.domain.common.PageResult;
 import pl.jakubholik90.domain.model.Document;
 import pl.jakubholik90.domain.model.DocumentStatus;
 import pl.jakubholik90.domain.model.RecipientType;
+import pl.jakubholik90.domain.model.StatusChangeEvent;
 import pl.jakubholik90.domain.port.in.*;
 
 import java.time.LocalDateTime;
@@ -25,8 +26,7 @@ import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.web.servlet.function.RequestPredicates.param;
 
@@ -45,6 +45,13 @@ public class DocumentControllerTest {
 
     @MockitoBean
     GetDocumentsByProjectIdUseCase getDocumentsByProjectIdUseCase;
+
+    @MockitoBean
+    ChangeDocumentStatusUseCase changeDocumentStatusUseCase;
+
+    @MockitoBean
+    GetDocumentStatusHistoryUseCase getDocumentStatusHistoryUseCase;
+
 
     @Autowired
     MockMvc mockMvc; // MockMvc = simulating HTTP request without starting a server
@@ -229,6 +236,50 @@ public class DocumentControllerTest {
         verify(getDocumentByIdUseCase,never()).getDocumentById(anyInt());
     }
 
+    @Test // testing ChangeDocumentStatusUseCase
+    public void shouldChangeStatusAndReturn200() throws Exception {
+        //given
+        Document documentNewStatus = Document.builder()
+                .documentId(1)
+                .fileName("test.pdf")
+                .projectId(1)
+                .status(DocumentStatus.AT_USER)
+                .currentRecipient(RecipientType.USER)
+                .lastStatusChange(LocalDateTime.of(1996,12,31,12,59,00))
+                .history(List.of(
+                        StatusChangeEvent.builder()
+                                .timestamp(LocalDateTime.of(1996,12,31,12,59,00))
+                                .fromStatus(DocumentStatus.DRAFT)
+                                .toStatus(DocumentStatus.AT_USER)
+                                .fromRecipient(RecipientType.SUBCONTRACTOR)
+                                .toRecipient(RecipientType.USER)
+                                .changedBy("SYSTEM") // placeholder
+                                .reason("newChange")
+                                .build()))
+                .build();
 
+        when(changeDocumentStatusUseCase.changeDocumentStatus(any(ChangeDocumentStatusDTO.class))).thenReturn(documentNewStatus);
+        String jsonString = """
+        {
+            "newStatus": "AT_USER",
+            "newRecipient": "USER",
+            "reason": "newChange"
+        }
+        """;
 
+        // when
+        mockMvc.perform(
+                        patch("/api/documents/{id}/status", documentNewStatus.getDocumentId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(jsonString)
+                )
+                // then
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("AT_USER"))
+                .andExpect(jsonPath("$.currentRecipient").value("USER"))
+                .andExpect(jsonPath("$.lastStatusChange").value(documentNewStatus.getLastStatusChange()))
+                .andExpect(jsonPath("$.history",hasSize(documentNewStatus.getHistory().size())));
+
+    verify(changeDocumentStatusUseCase,times(1)).changeDocumentStatus(any(ChangeDocumentStatusDTO.class));
+    }
 }
