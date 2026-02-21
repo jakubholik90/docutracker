@@ -1,15 +1,20 @@
 package pl.jakubholik90.adapter.in.web;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pl.jakubholik90.adapter.in.web.dto.DocumentPageResponse;
 import pl.jakubholik90.adapter.in.web.dto.DocumentRequest;
 import pl.jakubholik90.adapter.in.web.dto.DocumentResponse;
+import pl.jakubholik90.adapter.in.web.dto.StatusChangeEventRequest;
 import pl.jakubholik90.domain.common.PageRequest;
 import pl.jakubholik90.domain.common.PageResult;
 import pl.jakubholik90.domain.model.Document;
+import pl.jakubholik90.domain.model.DocumentStatus;
+import pl.jakubholik90.domain.model.RecipientType;
 import pl.jakubholik90.domain.port.in.*;
+import pl.jakubholik90.infrastructure.exception.DocumentException;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -24,6 +29,8 @@ public class DocumentController {
     private final GetDocumentByIdUseCase getDocumentByIdUseCase;
     private final GetDocumentsByProjectIdUseCase getDocumentsByProjectIdUseCase;
     private final GetAllDocumentsUseCase getAllDocumentsUseCase;
+    private final ChangeDocumentStatusUseCase changeDocumentStatusUseCase;
+    private final GetDocumentStatusHistoryUseCase getDocumentStatusHistoryUseCase;
 
     @PostMapping("/api/documents")
     public ResponseEntity<DocumentResponse> createDocument(@RequestBody DocumentRequest documentRequest) {
@@ -128,4 +135,35 @@ public class DocumentController {
         return responseEntity;
     }
 
+    @PatchMapping("api/documents/{id}/status")
+    public ResponseEntity<DocumentResponse> updateDocument(@PathVariable int id, @RequestBody StatusChangeEventRequest request) {
+        ChangeDocumentStatusDTO changeStatusDTO = new ChangeDocumentStatusDTO(
+                id,
+                request.newStatus(),
+                request.newRecipient(),
+                request.reason(),
+                "SYSTEM");
+
+        ResponseEntity<DocumentResponse> responseEntity;
+
+        try {
+            Document document = changeDocumentStatusUseCase.changeDocumentStatus(changeStatusDTO);
+            DocumentResponse documentResponse = new DocumentResponse(
+                    document.getDocumentId(),
+                    document.getFileName(),
+                    document.getProjectId(),
+                    document.getStatus(),
+                    document.getCurrentRecipient(),
+                    document.getLastStatusChange());
+
+            responseEntity = ResponseEntity
+                    .ok()
+                    .body(documentResponse);
+        } catch (DocumentException e) {
+            responseEntity = ResponseEntity
+                    .notFound()
+                    .build();
+        }
+            return responseEntity;
+    }
 }

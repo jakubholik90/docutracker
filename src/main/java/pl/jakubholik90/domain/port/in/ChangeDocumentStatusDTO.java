@@ -7,5 +7,6 @@ public record ChangeDocumentStatusDTO(
         int documentId,
         DocumentStatus newStatus,
         RecipientType newRecipient,
-        String reason) {
+        String reason,
+        String changedBy) {
 }

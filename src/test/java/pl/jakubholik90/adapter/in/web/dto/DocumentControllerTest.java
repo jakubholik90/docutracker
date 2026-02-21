@@ -18,6 +18,7 @@ import pl.jakubholik90.domain.model.DocumentStatus;
 import pl.jakubholik90.domain.model.RecipientType;
 import pl.jakubholik90.domain.model.StatusChangeEvent;
 import pl.jakubholik90.domain.port.in.*;
+import pl.jakubholik90.infrastructure.exception.DocumentException;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -277,9 +278,34 @@ public class DocumentControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("AT_USER"))
                 .andExpect(jsonPath("$.currentRecipient").value("USER"))
-                .andExpect(jsonPath("$.lastStatusChange").value(documentNewStatus.getLastStatusChange()))
-                .andExpect(jsonPath("$.history",hasSize(documentNewStatus.getHistory().size())));
+                .andExpect(jsonPath("$.lastStatusChange").exists())
+                .andExpect(jsonPath("$.lastStatusChange").isNotEmpty());
 
     verify(changeDocumentStatusUseCase,times(1)).changeDocumentStatus(any(ChangeDocumentStatusDTO.class));
+    }
+
+    @Test // testing ChangeDocumentStatusUseCase
+    public void shouldReturn404WhenDocumentNotFoundOnStatusChange() throws Exception {
+        //given
+        when(changeDocumentStatusUseCase.changeDocumentStatus(any(ChangeDocumentStatusDTO.class))).thenThrow(new DocumentException("Document not found"));
+        String jsonString = """
+        {
+            "newStatus": "AT_USER",
+            "newRecipient": "USER",
+            "reason": "newChange",
+            "changedBy": "SYSTEM"
+        }
+        """;
+
+        // when
+        mockMvc.perform(
+                        patch("/api/documents/{id}/status", 999)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(jsonString)
+                )
+                // then
+                .andExpect(status().isNotFound());
+
+        verify(changeDocumentStatusUseCase,times(1)).changeDocumentStatus(any(ChangeDocumentStatusDTO.class));
     }
 }

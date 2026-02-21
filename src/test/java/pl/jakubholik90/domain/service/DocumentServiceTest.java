@@ -182,7 +182,8 @@ public class DocumentServiceTest {
                 documentId,
                 DocumentStatus.AT_USER,
                 RecipientType.USER,
-                "setup");
+                "setup",
+                "SYSTEM");
         when(documentRepository.findByDocumentId(documentId)).thenReturn(Optional.of(oldDocument));
 
         DocumentStatus oldStatus = oldDocument.getStatus();
@@ -211,7 +212,8 @@ public class DocumentServiceTest {
                 documentId,
                 DocumentStatus.AT_USER,
                 RecipientType.USER,
-                "setup");
+                "setup",
+                "SYSTEM");
         //when+then
         Assertions.assertThrows(DocumentException.class,() -> documentService.changeDocumentStatus(changeStatusDTO));
     }
