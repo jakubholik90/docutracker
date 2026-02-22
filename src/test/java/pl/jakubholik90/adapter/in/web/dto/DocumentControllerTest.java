@@ -16,7 +16,9 @@ import pl.jakubholik90.domain.common.PageResult;
 import pl.jakubholik90.domain.model.Document;
 import pl.jakubholik90.domain.model.DocumentStatus;
 import pl.jakubholik90.domain.model.RecipientType;
+import pl.jakubholik90.domain.model.StatusChangeEvent;
 import pl.jakubholik90.domain.port.in.*;
+import pl.jakubholik90.infrastructure.exception.DocumentException;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -25,8 +27,7 @@ import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.web.servlet.function.RequestPredicates.param;
 
@@ -45,6 +46,13 @@ public class DocumentControllerTest {
 
     @MockitoBean
     GetDocumentsByProjectIdUseCase getDocumentsByProjectIdUseCase;
+
+    @MockitoBean
+    ChangeDocumentStatusUseCase changeDocumentStatusUseCase;
+
+    @MockitoBean
+    GetDocumentStatusHistoryUseCase getDocumentStatusHistoryUseCase;
+
 
     @Autowired
     MockMvc mockMvc; // MockMvc = simulating HTTP request without starting a server
@@ -229,6 +237,149 @@ public class DocumentControllerTest {
         verify(getDocumentByIdUseCase,never()).getDocumentById(anyInt());
     }
 
+    @Test // testing ChangeDocumentStatusUseCase
+    public void shouldChangeStatusAndReturn200() throws Exception {
+        //given
+        Document documentNewStatus = Document.builder()
+                .documentId(1)
+                .fileName("test.pdf")
+                .projectId(1)
+                .status(DocumentStatus.AT_USER)
+                .currentRecipient(RecipientType.USER)
+                .lastStatusChange(LocalDateTime.of(1996,12,31,12,59,00))
+                .history(List.of(
+                        StatusChangeEvent.builder()
+                                .timestamp(LocalDateTime.of(1996,12,31,12,59,00))
+                                .fromStatus(DocumentStatus.DRAFT)
+                                .toStatus(DocumentStatus.AT_USER)
+                                .fromRecipient(RecipientType.SUBCONTRACTOR)
+                                .toRecipient(RecipientType.USER)
+                                .changedBy("SYSTEM") // placeholder
+                                .reason("newChange")
+                                .build()))
+                .build();
 
+        when(changeDocumentStatusUseCase.changeDocumentStatus(any(ChangeDocumentStatusDTO.class))).thenReturn(documentNewStatus);
+        String jsonString = """
+        {
+            "newStatus": "AT_USER",
+            "newRecipient": "USER",
+            "reason": "newChange"
+        }
+        """;
 
+        // when
+        mockMvc.perform(
+                        patch("/api/documents/{id}/status", documentNewStatus.getDocumentId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(jsonString)
+                )
+                // then
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("AT_USER"))
+                .andExpect(jsonPath("$.currentRecipient").value("USER"))
+                .andExpect(jsonPath("$.lastStatusChange").exists())
+                .andExpect(jsonPath("$.lastStatusChange").isNotEmpty());
+
+    verify(changeDocumentStatusUseCase,times(1)).changeDocumentStatus(any(ChangeDocumentStatusDTO.class));
+    }
+
+    @Test // testing ChangeDocumentStatusUseCase
+    public void shouldReturn404WhenDocumentNotFoundOnStatusChange() throws Exception {
+        //given
+        when(changeDocumentStatusUseCase.changeDocumentStatus(any(ChangeDocumentStatusDTO.class))).thenThrow(new DocumentException("Document not found"));
+        String jsonString = """
+        {
+            "newStatus": "AT_USER",
+            "newRecipient": "USER",
+            "reason": "newChange",
+            "changedBy": "SYSTEM"
+        }
+        """;
+
+        // when
+        mockMvc.perform(
+                        patch("/api/documents/{id}/status", 999)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(jsonString)
+                )
+                // then
+                .andExpect(status().isNotFound());
+
+        verify(changeDocumentStatusUseCase,times(1)).changeDocumentStatus(any(ChangeDocumentStatusDTO.class));
+    }
+
+    @Test // testing GetDocumentStatusHistoryUseCase
+    public void shouldReturn200AndDocumentStatusHistory() throws Exception {
+        //given
+        int id = 1;
+
+        StatusChangeEvent event0 = StatusChangeEvent.builder()
+                .id(0L)
+                .timestamp(LocalDateTime.now())
+                .fromStatus(DocumentStatus.DRAFT)
+                .toStatus(DocumentStatus.AT_USER)
+                .fromRecipient(RecipientType.USER)
+                .toRecipient(RecipientType.USER)
+                .changedBy("SYSTEM")
+                .reason("setup")
+                .build();
+
+        StatusChangeEvent event1 = StatusChangeEvent.builder()
+                .id(1L)
+                .timestamp(LocalDateTime.now())
+                .fromStatus(event0.getToStatus())
+                .toStatus(DocumentStatus.AT_SUBCONTRACTOR)
+                .fromRecipient(event0.getToRecipient())
+                .toRecipient(RecipientType.SUBCONTRACTOR)
+                .changedBy("SYSTEM")
+                .reason("toSubcontractor")
+                .build();
+
+        ArrayList<StatusChangeEvent> history = new ArrayList<>();
+        history.add(event0);
+        history.add(event1);
+
+        when(getDocumentStatusHistoryUseCase.getDocumentStatusHistory(id)).thenReturn(history);
+        when(getDocumentByIdUseCase.getDocumentById(id)).thenReturn(Optional.of(Document.builder().build()));
+
+        // when
+        mockMvc.perform(
+                        get("/api/documents/{id}/history",id))
+                // then
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$",hasSize(history.size())))
+
+                .andExpect(jsonPath("$[0].timestamp").isNotEmpty())
+                .andExpect(jsonPath("$[0].fromStatus").value(event0.getFromStatus().name()))
+                .andExpect(jsonPath("$[0].toStatus").value(event0.getToStatus().name()))
+                .andExpect(jsonPath("$[0].fromRecipient").value(event0.getFromRecipient().name()))
+                .andExpect(jsonPath("$[0].toRecipient").value(event0.getToRecipient().name()))
+                .andExpect(jsonPath("$[0].changedBy").value(event0.getChangedBy()))
+                .andExpect(jsonPath("$[0].reason").value(event0.getReason()))
+
+                .andExpect(jsonPath("$[1].timestamp").isNotEmpty())
+                .andExpect(jsonPath("$[1].fromStatus").value(event1.getFromStatus().name()))
+                .andExpect(jsonPath("$[1].toStatus").value(event1.getToStatus().name()))
+                .andExpect(jsonPath("$[1].fromRecipient").value(event1.getFromRecipient().name()))
+                .andExpect(jsonPath("$[1].toRecipient").value(event1.getToRecipient().name()))
+                .andExpect(jsonPath("$[1].changedBy").value(event1.getChangedBy()))
+                .andExpect(jsonPath("$[1].reason").value(event1.getReason()))
+                ;
+
+        verify(getDocumentStatusHistoryUseCase,times(1)).getDocumentStatusHistory(id);
+    }
+
+    @Test // testing GetDocumentStatusHistoryUseCase
+    public void shouldReturn404WhenHistoryNotFound() throws Exception {
+        //given
+
+        when(getDocumentByIdUseCase.getDocumentById(anyInt())).thenReturn(Optional.empty());
+
+        // when
+        mockMvc.perform(
+                        get("/api/documents/{id}/history",100))
+                // then
+                .andExpect(status().isNotFound());
+    }
 }

@@ -1,12 +1,10 @@
-package pl.jakubholik90.domain.port.in;
+package pl.jakubholik90.adapter.in.web.dto;
 
 import pl.jakubholik90.domain.model.DocumentStatus;
 import pl.jakubholik90.domain.model.RecipientType;
 
-public record ChangeDocumentStatusDTO(
-        int documentId,
+public record StatusChangeEventRequest(
         DocumentStatus newStatus,
         RecipientType newRecipient,
-        String reason,
-        String changedBy) {
+        String reason){
 }

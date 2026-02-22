@@ -182,7 +182,8 @@ public class DocumentServiceTest {
                 documentId,
                 DocumentStatus.AT_USER,
                 RecipientType.USER,
-                "setup");
+                "setup",
+                "SYSTEM");
         when(documentRepository.findByDocumentId(documentId)).thenReturn(Optional.of(oldDocument));
 
         DocumentStatus oldStatus = oldDocument.getStatus();
@@ -211,9 +212,63 @@ public class DocumentServiceTest {
                 documentId,
                 DocumentStatus.AT_USER,
                 RecipientType.USER,
-                "setup");
+                "setup",
+                "SYSTEM");
         //when+then
         Assertions.assertThrows(DocumentException.class,() -> documentService.changeDocumentStatus(changeStatusDTO));
+    }
+
+    @Test
+    public void shouldReturnListOfStatusChangeEvents() {
+        //given
+        int id = 1;
+        ArrayList<StatusChangeEvent> history = new ArrayList<>();
+        StatusChangeEvent event0 = StatusChangeEvent.builder()
+                .id(0L)
+                .timestamp(LocalDateTime.now())
+                .fromStatus(DocumentStatus.AT_USER)
+                .toStatus(DocumentStatus.CHECKING_BY_CLIENT)
+                .fromRecipient(RecipientType.USER)
+                .toRecipient(RecipientType.CLIENT)
+                .changedBy("SYSTEM")
+                .reason("test0")
+                .build();
+        StatusChangeEvent event1 = StatusChangeEvent.builder()
+                .id(1L)
+                .timestamp(LocalDateTime.now())
+                .fromStatus(DocumentStatus.AT_USER)
+                .toStatus(DocumentStatus.CHECKING_BY_CLIENT)
+                .fromRecipient(RecipientType.USER)
+                .toRecipient(RecipientType.CLIENT)
+                .changedBy("SYSTEM")
+                .reason("test1")
+                .build();
+        StatusChangeEvent event2 = StatusChangeEvent.builder()
+                .id(2L)
+                .timestamp(LocalDateTime.now())
+                .fromStatus(DocumentStatus.AT_USER)
+                .toStatus(DocumentStatus.CHECKING_BY_CLIENT)
+                .fromRecipient(RecipientType.USER)
+                .toRecipient(RecipientType.CLIENT)
+                .changedBy("SYSTEM")
+                .reason("test2")
+                .build();
+        history.add(event0);
+        history.add(event1);
+        history.add(event2);
+        Document build = Document.builder()
+                .documentId(id)
+                .history(history)
+                .build();
+        Optional<Document> optionalDocument = Optional.of(build);
+
+
+        when(documentRepository.findByDocumentId(id)).thenReturn(optionalDocument);
+        //when
+        List<StatusChangeEvent> documentStatusHistory = documentService.getDocumentStatusHistory(id);
+        System.out.println("documentStatusHistory:" + documentStatusHistory);
+        //then
+        Assertions.assertEquals(history,documentStatusHistory);
     }
 
 }

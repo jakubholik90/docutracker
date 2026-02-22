@@ -13,6 +13,7 @@ import pl.jakubholik90.infrastructure.exception.DocumentException;
 import pl.jakubholik90.infrastructure.exception.ProjectException;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,7 +21,8 @@ public class DocumentService implements CreateDocumentUseCase,
         GetAllDocumentsUseCase,
         GetDocumentByIdUseCase,
         GetDocumentsByProjectIdUseCase,
-        ChangeDocumentStatusUseCase {
+        ChangeDocumentStatusUseCase,
+        GetDocumentStatusHistoryUseCase {
 
     private final DocumentRepository documentRepository;
 
@@ -95,5 +97,16 @@ public class DocumentService implements CreateDocumentUseCase,
 
             return returnDocument;
         }
+    }
+
+    @Override
+    public List<StatusChangeEvent> getDocumentStatusHistory(int documentId) {
+        Optional<Document> byDocumentId = documentRepository.findByDocumentId(documentId);
+        ArrayList<StatusChangeEvent> returnList = new ArrayList<>();
+        if (byDocumentId.isPresent()) {
+            byDocumentId.get().getHistory()
+                    .forEach(event->returnList.add(event));
+        }
+        return returnList;
     }
 }
