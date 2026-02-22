@@ -341,6 +341,7 @@ public class DocumentControllerTest {
         history.add(event1);
 
         when(getDocumentStatusHistoryUseCase.getDocumentStatusHistory(id)).thenReturn(history);
+        when(getDocumentByIdUseCase.getDocumentById(id)).thenReturn(Optional.of(Document.builder().build()));
 
         // when
         mockMvc.perform(
@@ -367,5 +368,18 @@ public class DocumentControllerTest {
                 ;
 
         verify(getDocumentStatusHistoryUseCase,times(1)).getDocumentStatusHistory(id);
+    }
+
+    @Test // testing GetDocumentStatusHistoryUseCase
+    public void shouldReturn404WhenHistoryNotFound() throws Exception {
+        //given
+
+        when(getDocumentByIdUseCase.getDocumentById(anyInt())).thenReturn(Optional.empty());
+
+        // when
+        mockMvc.perform(
+                        get("/api/documents/{id}/history",100))
+                // then
+                .andExpect(status().isNotFound());
     }
 }

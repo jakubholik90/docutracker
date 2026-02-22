@@ -168,22 +168,29 @@ public class DocumentController {
 
     @GetMapping("api/documents/{id}/history")
     public ResponseEntity<List<StatusChangeEventResponse>> getDocumentHistory(@PathVariable int id) {
-        List<StatusChangeEvent>  history = getDocumentStatusHistoryUseCase.getDocumentStatusHistory(id);
-        List<StatusChangeEventResponse> historyResponse = history.stream()
-                .map(a -> new StatusChangeEventResponse(
-                        a.getTimestamp(),
-                        a.getFromStatus(),
-                        a.getToStatus(),
-                        a.getFromRecipient(),
-                        a.getToRecipient(),
-                        a.getChangedBy(),
-                        a.getReason()))
-                .toList();
+        ResponseEntity<List<StatusChangeEventResponse>> returnEntity;
+        Optional<Document> documentById = getDocumentByIdUseCase.getDocumentById(id);
+        if (documentById.isEmpty()) {
+            returnEntity = ResponseEntity
+                    .notFound()
+                    .build();
+        } else {
+            List<StatusChangeEvent> history = getDocumentStatusHistoryUseCase.getDocumentStatusHistory(id);
+            List<StatusChangeEventResponse> historyResponse = history.stream()
+                    .map(a -> new StatusChangeEventResponse(
+                            a.getTimestamp(),
+                            a.getFromStatus(),
+                            a.getToStatus(),
+                            a.getFromRecipient(),
+                            a.getToRecipient(),
+                            a.getChangedBy(),
+                            a.getReason()))
+                    .toList();
 
-        ResponseEntity<List<StatusChangeEventResponse>> returnEntity = ResponseEntity
-                .ok()
-                .body(historyResponse);
-
+            returnEntity = ResponseEntity
+                    .ok()
+                    .body(historyResponse);
+        }
         return returnEntity;
     }
 }
