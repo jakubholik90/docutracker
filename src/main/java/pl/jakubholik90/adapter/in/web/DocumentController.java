@@ -4,19 +4,18 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import pl.jakubholik90.adapter.in.web.dto.DocumentPageResponse;
-import pl.jakubholik90.adapter.in.web.dto.DocumentRequest;
-import pl.jakubholik90.adapter.in.web.dto.DocumentResponse;
-import pl.jakubholik90.adapter.in.web.dto.StatusChangeEventRequest;
+import pl.jakubholik90.adapter.in.web.dto.*;
 import pl.jakubholik90.domain.common.PageRequest;
 import pl.jakubholik90.domain.common.PageResult;
 import pl.jakubholik90.domain.model.Document;
 import pl.jakubholik90.domain.model.DocumentStatus;
 import pl.jakubholik90.domain.model.RecipientType;
+import pl.jakubholik90.domain.model.StatusChangeEvent;
 import pl.jakubholik90.domain.port.in.*;
 import pl.jakubholik90.infrastructure.exception.DocumentException;
 
 import java.net.URI;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -165,5 +164,26 @@ public class DocumentController {
                     .build();
         }
             return responseEntity;
+    }
+
+    @GetMapping("api/documents/{id}/history")
+    public ResponseEntity<List<StatusChangeEventResponse>> getDocumentHistory(@PathVariable int id) {
+        List<StatusChangeEvent>  history = getDocumentStatusHistoryUseCase.getDocumentStatusHistory(id);
+        List<StatusChangeEventResponse> historyResponse = history.stream()
+                .map(a -> new StatusChangeEventResponse(
+                        a.getTimestamp(),
+                        a.getFromStatus(),
+                        a.getToStatus(),
+                        a.getFromRecipient(),
+                        a.getToRecipient(),
+                        a.getChangedBy(),
+                        a.getReason()))
+                .toList();
+
+        ResponseEntity<List<StatusChangeEventResponse>> returnEntity = ResponseEntity
+                .ok()
+                .body(historyResponse);
+
+        return returnEntity;
     }
 }

@@ -308,4 +308,64 @@ public class DocumentControllerTest {
 
         verify(changeDocumentStatusUseCase,times(1)).changeDocumentStatus(any(ChangeDocumentStatusDTO.class));
     }
+
+    @Test // testing GetDocumentStatusHistoryUseCase
+    public void shouldReturn200AndDocumentStatusHistory() throws Exception {
+        //given
+        int id = 1;
+
+        StatusChangeEvent event0 = StatusChangeEvent.builder()
+                .id(0L)
+                .timestamp(LocalDateTime.now())
+                .fromStatus(DocumentStatus.DRAFT)
+                .toStatus(DocumentStatus.AT_USER)
+                .fromRecipient(RecipientType.USER)
+                .toRecipient(RecipientType.USER)
+                .changedBy("SYSTEM")
+                .reason("setup")
+                .build();
+
+        StatusChangeEvent event1 = StatusChangeEvent.builder()
+                .id(1L)
+                .timestamp(LocalDateTime.now())
+                .fromStatus(event0.getToStatus())
+                .toStatus(DocumentStatus.AT_SUBCONTRACTOR)
+                .fromRecipient(event0.getToRecipient())
+                .toRecipient(RecipientType.SUBCONTRACTOR)
+                .changedBy("SYSTEM")
+                .reason("toSubcontractor")
+                .build();
+
+        ArrayList<StatusChangeEvent> history = new ArrayList<>();
+        history.add(event0);
+        history.add(event1);
+
+        when(getDocumentStatusHistoryUseCase.getDocumentStatusHistory(id)).thenReturn(history);
+
+        // when
+        mockMvc.perform(
+                        get("/api/documents/{id}/history",id))
+                // then
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$",hasSize(history.size())))
+
+                .andExpect(jsonPath("$[0].timestamp").isNotEmpty())
+                .andExpect(jsonPath("$[0].fromStatus").value(event0.getFromStatus().name()))
+                .andExpect(jsonPath("$[0].toStatus").value(event0.getToStatus().name()))
+                .andExpect(jsonPath("$[0].fromRecipient").value(event0.getFromRecipient().name()))
+                .andExpect(jsonPath("$[0].toRecipient").value(event0.getToRecipient().name()))
+                .andExpect(jsonPath("$[0].changedBy").value(event0.getChangedBy()))
+                .andExpect(jsonPath("$[0].reason").value(event0.getReason()))
+
+                .andExpect(jsonPath("$[1].timestamp").isNotEmpty())
+                .andExpect(jsonPath("$[1].fromStatus").value(event1.getFromStatus().name()))
+                .andExpect(jsonPath("$[1].toStatus").value(event1.getToStatus().name()))
+                .andExpect(jsonPath("$[1].fromRecipient").value(event1.getFromRecipient().name()))
+                .andExpect(jsonPath("$[1].toRecipient").value(event1.getToRecipient().name()))
+                .andExpect(jsonPath("$[1].changedBy").value(event1.getChangedBy()))
+                .andExpect(jsonPath("$[1].reason").value(event1.getReason()))
+                ;
+
+        verify(getDocumentStatusHistoryUseCase,times(1)).getDocumentStatusHistory(id);
+    }
 }
