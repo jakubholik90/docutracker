@@ -10,7 +10,6 @@ public class User {
     private final Long id;
     private final String email;
     private final String name;
-    private final LocalDateTime createdAt;
 
     public Long getId() {
         return id;
@@ -22,9 +21,5 @@ public class User {
 
     public String getName() {
         return name;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
     }
 }
