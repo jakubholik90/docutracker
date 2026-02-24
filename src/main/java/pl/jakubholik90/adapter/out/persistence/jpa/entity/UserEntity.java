@@ -22,7 +22,6 @@ public class UserEntity {
     }
 
     //getters
-
     public Long getId() {
         return id;
     }
@@ -33,5 +32,18 @@ public class UserEntity {
 
     public String getName() {
         return name;
+    }
+
+    //setter
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }
