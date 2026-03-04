@@ -4,9 +4,11 @@ import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import org.springframework.stereotype.Component;
 import pl.jakubholik90.adapter.out.persistence.jpa.entity.UserEntity;
 import pl.jakubholik90.domain.model.User;
 
+@Component
 public class UserMapper {
     public static User mapToUser(UserEntity userEntity) {
 
