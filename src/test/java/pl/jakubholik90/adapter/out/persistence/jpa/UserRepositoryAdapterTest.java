@@ -1,4 +1,4 @@
-package pl.jakubholik90.adapter.out.persistence;
+package pl.jakubholik90.adapter.out.persistence.jpa;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
