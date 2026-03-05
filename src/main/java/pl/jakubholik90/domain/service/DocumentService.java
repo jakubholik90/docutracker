@@ -1,6 +1,7 @@
 package pl.jakubholik90.domain.service;
 
 import lombok.Builder;
+import org.springframework.stereotype.Service;
 import pl.jakubholik90.domain.common.PageRequest;
 import pl.jakubholik90.domain.common.PageResult;
 import pl.jakubholik90.domain.model.Document;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Service
 public class DocumentService implements CreateDocumentUseCase,
         GetAllDocumentsUseCase,
         GetDocumentByIdUseCase,
