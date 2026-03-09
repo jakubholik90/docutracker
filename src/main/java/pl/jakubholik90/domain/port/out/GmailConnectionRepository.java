@@ -12,4 +12,6 @@ public interface GmailConnectionRepository {
 
     public void delete(GmailConnection connection);
 
+    public void deleteAll();
+
 }
